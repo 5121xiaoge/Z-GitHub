@@ -238,8 +238,6 @@ async function githubInterface() {
 		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
 		moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
 		terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>',
-		clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/>',
-		trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
 		alert: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
 		x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
 		file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
@@ -290,6 +288,15 @@ async function githubInterface() {
 		button, a, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 		button { cursor: pointer; }
 		button:disabled { cursor: not-allowed; opacity: .45; }
+		.button, .icon-button, .tab, .example-button { position: relative; isolation: isolate; transition: transform 120ms ease-out; }
+		.button::before, .icon-button::before, .tab::before, .example-button::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--ink); opacity: 0; pointer-events: none; transition: opacity 120ms ease-out; }
+		.button.primary::before { background: #000; }
+		.button:active:not(:disabled), .icon-button:active:not(:disabled), .tab:active, .example-button:active { background-color: var(--subtle); }
+		.button.primary:active:not(:disabled) { background-color: var(--press); border-color: var(--press); }
+		.button:active:not(:disabled)::before, .icon-button:active:not(:disabled)::before, .tab:active::before, .example-button:active::before { opacity: .08; transition-duration: 160ms; }
+		.button:active:not(:disabled):not(:focus-visible), .icon-button:active:not(:disabled):not(:focus-visible), .tab:active:not(:focus-visible), .example-button:active:not(:focus-visible) { transform: translateY(1px) scale(.98); transition-duration: 160ms; }
+		.button:focus-visible, .icon-button:focus-visible, .tab:focus-visible, .example-button:focus-visible,
+		.button:focus-visible::before, .icon-button:focus-visible::before, .tab:focus-visible::before, .example-button:focus-visible::before { transition: none; }
 		a { color: inherit; text-decoration: none; text-underline-offset: 4px; }
 		button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 		::selection { background: var(--accent); color: var(--surface); }
@@ -306,17 +313,12 @@ async function githubInterface() {
 		.topbar-inner { max-width: 1200px; min-height: 72px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 		.brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; white-space: nowrap; }
 		.brand img { width: 32px; height: 32px; }
-		.top-actions { display: flex; align-items: center; gap: 12px; }
-		.source-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--body); }
-		.source-link .icon { width: 16px; height: 16px; }
-		.icon-button { width: 40px; height: 40px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--body); flex-shrink: 0; transition: transform 120ms ease-out; }
+		.icon-button { width: 40px; height: 40px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--body); flex-shrink: 0; }
 		.icon-button.flat { border-color: transparent; background: transparent; }
-		.icon-button:active, .button:active { transform: translateY(1px); }
 		.tabs { display: flex; align-items: stretch; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-		.tab { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 6px; background: none; border: 0; color: var(--muted); white-space: nowrap; }
+		.tab { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 6px; background: none; border: 1px solid transparent; color: var(--muted); white-space: nowrap; }
 		.tab .icon { width: 17px; height: 17px; }
-		.tab[aria-selected="true"] { background: var(--subtle); color: var(--ink); font-weight: 600; }
-		.count { font: 11px/20px var(--mono); font-variant-numeric: tabular-nums; background: var(--subtle); border-radius: 4px; min-width: 23px; text-align: center; color: var(--body); }
+		.tab[aria-selected="true"] { background: var(--subtle); border-color: var(--line-strong); color: var(--ink); font-weight: 600; }
 		main { flex: 1; }
 		.intro { padding: 48px 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 		.workarea { min-width: 0; padding-bottom: 48px; }
@@ -331,15 +333,22 @@ async function githubInterface() {
 		.input-tools { display: flex; flex-direction: column; gap: 2px; margin-top: -6px; }
 		.input-tools .icon-button { width: 34px; height: 34px; }
 		.input-tools .icon { width: 17px; height: 17px; }
+		.examples { display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; }
+		.examples-label { display: flex; align-items: center; min-height: 40px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+		.example-options { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+		.example-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--body); font-size: 12px; font-weight: 500; white-space: nowrap; }
+		.example-button .icon { width: 14px; height: 14px; }
 		.form-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 16px; }
 		.validation { display: flex; align-items: flex-start; gap: 7px; color: var(--muted); font-size: 12px; min-height: 22px; min-width: 0; }
 		.validation[data-state="empty"] { visibility: hidden; }
 		.validation .icon { width: 15px; height: 15px; margin-top: 2px; }
 		.validation[data-state="valid"] { color: var(--success); }
 		.validation[data-state="error"] { color: var(--error); }
-		.button { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; padding: 8px 16px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-weight: 500; flex-shrink: 0; transition: transform 120ms ease-out; }
+		.button { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; padding: 8px 16px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-weight: 500; flex-shrink: 0; }
 		.button .icon { width: 16px; height: 16px; }
 		.button.primary { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+		.button, .icon-button:not(.flat), .example-button, .tab[aria-selected="true"] { background-image: linear-gradient(180deg, #ffffff0c, #ffffff00); box-shadow: inset 0 1px 0 #ffffff14; }
+		.button.primary { background-image: linear-gradient(180deg, #ffffff18, #ffffff00); box-shadow: inset 0 1px 0 #ffffff30, inset 0 -1px 0 #00000012; }
 		#generate { min-width: 148px; }
 		.output-section { margin-top: 32px; }
 		.output-shell { border-radius: 8px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
@@ -366,7 +375,6 @@ async function githubInterface() {
 		.disclosure[open] > .disclosure-summary > .icon:last-child { transform: rotate(90deg); }
 		.disclosure-body { padding: 0 0 24px; }
 		#resource-disclosure { margin-top: 20px; }
-		#history-disclosure { margin-top: 32px; border-bottom: 1px solid var(--line); }
 		.detail-list { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
 		.detail-wide { grid-column: 1 / -1; }
 		.detail-list dt { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
@@ -376,23 +384,7 @@ async function githubInterface() {
 		.route-detail .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--accent); }
 		.route-detail p { font-size: 12px; color: var(--body); }
 		.route-detail small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; }
-		.history-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 8px; }
-		.history-header p, .history-empty { color: var(--muted); font-size: 12px; }
-		.history-empty { padding: 8px 0; }
-		.history-list { list-style: none; padding: 0; margin: 0; }
-		.history-row { display: flex; gap: 12px; align-items: center; padding: 18px 0; border-top: 1px solid var(--line); }
-		.history-row > .icon { width: 18px; height: 18px; color: var(--body); }
-		.history-info { min-width: 0; flex: 1; }
-		.history-name { display: block; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
-		.history-source { display: block; font: 11px/1.8 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
-		.history-time { font-size: 11px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
-		.history-tools { display: flex; gap: 2px; flex-shrink: 0; }
-		footer { border-top: 1px solid var(--line); }
-		.footer-inner { max-width: 1200px; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 11px; }
-		.footer-inner strong { color: var(--body); font-weight: 500; margin-right: 10px; }
-		.footer-links { display: flex; gap: 18px; flex-shrink: 0; }
 		#notice { position: fixed; z-index: 10; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); box-shadow: 0 4px 8px -4px #00000020, 0 12px 24px -8px #00000024; padding: 12px 18px; color: var(--ink); font-size: 13px; overflow-wrap: anywhere; display: flex; align-items: center; gap: 16px; }
-		.notice-action { border: 0; background: transparent; color: var(--accent); padding: 4px 0; font-weight: 500; white-space: nowrap; }
 		.theme-wipe { position: fixed; z-index: 2147483647; pointer-events: none; border-radius: 50%; }
 		html[data-theme-switching] *, html[data-theme-switching] *::before, html[data-theme-switching] *::after { transition: none !important; }
 		::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
@@ -404,12 +396,15 @@ async function githubInterface() {
 		@keyframes vt-reveal { from { clip-path: circle(0 at var(--vt-x) var(--vt-y)); } to { clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y)); } }
 		@keyframes vt-shrink { from { clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y)); } to { clip-path: circle(0 at var(--vt-x) var(--vt-y)); } }
 		@media (hover: hover) and (pointer: fine) {
-			.icon-button:hover { background: var(--subtle); color: var(--ink); }
+			.icon-button:hover:not(:disabled) { background-color: var(--subtle); border-color: var(--line-strong); color: var(--ink); }
 			.code-bar .icon-button:hover { background: #2c3038; color: var(--code-ink); }
-			.button:hover { background: var(--subtle); }
-			.button.primary:hover { background: var(--press); border-color: var(--press); }
-			a:hover { color: var(--accent); text-decoration: underline; }
+			.button:hover:not(:disabled) { background-color: var(--subtle); }
+			.button.primary:hover:not(:disabled) { background-color: var(--press); border-color: var(--press); }
+			.button:hover:not(:disabled)::before, .icon-button:hover:not(:disabled)::before, .tab:hover::before, .example-button:hover::before { opacity: .04; }
+			.button:active:not(:disabled)::before, .icon-button:active:not(:disabled)::before, .tab:active::before, .example-button:active::before { opacity: .08; }
+			a:not(.button):hover { color: var(--accent); text-decoration: underline; }
 			.tab:hover, .disclosure-summary:hover { color: var(--ink); }
+			.example-button:hover { border-color: var(--line-strong); color: var(--ink); }
 		}
 		@media (max-width: 760px) {
 			.wrap { padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left)); }
@@ -419,10 +414,10 @@ async function githubInterface() {
 			.intro nav, .tabs { width: 100%; }
 			.tab { flex: 1; min-height: 44px; }
 			.workarea { padding-bottom: 32px; }
-			.footer-inner { min-height: 80px; gap: 12px; flex-wrap: wrap; padding-top: 16px; padding-bottom: 16px; }
 			.input-tools .icon-button { width: 44px; height: 44px; }
 			.icon-button { width: 44px; height: 44px; }
 			.button { min-height: 44px; }
+			.examples-label, .example-button { min-height: 44px; }
 			.output-actions { padding: 14px 16px; }
 			.resource { padding: 16px; flex-wrap: wrap; }
 			.resource-text { flex-basis: calc(100% - 36px); }
@@ -430,9 +425,6 @@ async function githubInterface() {
 		}
 		@media (max-width: 400px) {
 			.wrap { padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
-			.top-actions { gap: 8px; }
-			.source-link span { display: none; }
-			.source-link { width: 36px; height: 44px; justify-content: center; }
 			.tab { padding: 0 10px; }
 			.form-bottom { align-items: stretch; flex-direction: column; gap: 12px; }
 			#generate { width: 100%; }
@@ -440,10 +432,10 @@ async function githubInterface() {
 			#source { font-size: 13px; }
 			.detail-list { grid-template-columns: 1fr; }
 			.output-actions { align-items: stretch; flex-direction: column; }
-			.history-tools { flex-direction: column; }
 		}
 		@media (prefers-reduced-motion: reduce) {
 			*, *::before, *::after, ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; transition: none !important; }
+			.button:active, .icon-button:active, .tab:active, .example-button:active { transform: none !important; }
 		}
 	</style>
 </head>
@@ -455,10 +447,7 @@ async function githubInterface() {
 				<img id="brand-image" width="32" height="32" alt="" src="${PREFIX}favicon.ico">
 				<span>Z-GitHub</span>
 			</a>
-			<div class="top-actions">
-				<a class="source-link" href="https://github.com/5121xiaoge/Z-GitHub" target="_blank" rel="noopener noreferrer" aria-label="项目仓库（新窗口）" title="项目仓库">${icon('external')}<span>项目仓库</span></a>
-				<button class="icon-button" id="theme" type="button" title="切换到浅色" aria-label="切换到浅色" aria-pressed="true">${icon('sun')}</button>
-			</div>
+			<button class="icon-button" id="theme" type="button" title="切换到浅色" aria-label="切换到浅色" aria-pressed="true">${icon('sun')}</button>
 		</div>
 	</header>
 	<main class="wrap" id="main" tabindex="-1">
@@ -483,6 +472,7 @@ async function githubInterface() {
 							<button class="icon-button flat" id="clear" type="button" aria-label="清空输入" title="清空输入" disabled>${icon('x')}</button>
 						</div>
 					</div>
+					<div class="examples" role="group" aria-label="示例链接"><span class="examples-label">示例</span><div class="example-options" id="examples"></div></div>
 					<div class="form-bottom">
 						<p class="validation" id="validation" role="status" aria-live="polite" data-state="empty"></p>
 						<button class="button primary" id="generate" type="submit"><span id="generate-label">生成加速链接</span>${icon('arrow')}</button>
@@ -505,17 +495,8 @@ async function githubInterface() {
 					</details>
 				</section>
 			</section>
-			<details class="disclosure" id="history-disclosure">
-				<summary class="disclosure-summary" id="history-heading">${icon('clock')}最近记录<span class="count" id="history-count" hidden>0</span>${icon('chevron')}</summary>
-				<section class="disclosure-body" id="panel-history" aria-labelledby="history-heading">
-					<div class="history-header"><p>当前页面会话</p><button class="icon-button flat" id="clear-history" type="button" title="清空记录" aria-label="清空记录" disabled>${icon('trash')}</button></div>
-					<p class="history-empty" id="history-empty">暂无生成记录</p>
-					<ul class="history-list" id="history-list" aria-label="已生成的资源"></ul>
-				</section>
-			</details>
 		</div>
 	</main>
-	<footer><div class="wrap footer-inner"><div><strong>Z-GitHub</strong>Cloudflare Workers &amp; Pages</div><div class="footer-links"><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/README.md" target="_blank" rel="noopener noreferrer">文档</a><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></div></div></footer>
 	<div id="notice" role="status" aria-live="polite" hidden></div>
 	<noscript><p style="padding:24px;text-align:center">链接生成需要 JavaScript。现有代理路由仍可直接访问。</p></noscript>
 	<!-- Lucide icons 0.468.0, ISC License.
@@ -537,41 +518,49 @@ async function githubInterface() {
 		const USE_JSDELIVR = ${json(Boolean(Config.jsdelivr))};
 		const FILE_PATTERNS = ${json([exp1, exp2, exp4, exp5, exp6].map(exp => exp.source))}.map(source => new RegExp(source, 'i'));
 		const ICONS = ${json(icons)};
+		const EXAMPLES = {
+			file: [
+				{ label: '项目文件', url: 'https://github.com/5121xiaoge/Z-GitHub/blob/main/_worker.js', icon: 'file' },
+				{ label: '源码 ZIP', url: 'https://github.com/5121xiaoge/Z-GitHub', icon: 'package' },
+				{ label: 'Raw 文件', url: 'https://raw.githubusercontent.com/5121xiaoge/Z-GitHub/main/_worker.js', icon: 'link' },
+			],
+			clone: [
+				{ label: 'HTTPS', url: 'https://github.com/5121xiaoge/Z-GitHub.git', icon: 'link' },
+				{ label: 'SSH', url: 'git@github.com:5121xiaoge/Z-GitHub.git', icon: 'terminal' },
+			],
+		};
 		const $ = id => document.getElementById(id);
 		const icon = name => '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
 		const base = location.origin + PREFIX;
 		const source = $('source');
-		const records = [];
 		const drafts = { file: '', clone: '' };
 		let mode = 'file';
 		let revision = 0;
 		let result = null;
 		let noticeTimer;
 
-		function notify(message, restore) {
+		function notify(message) {
 			$('notice').replaceChildren();
 			const text = document.createElement('span');
 			text.textContent = message;
 			$('notice').append(text);
-			if (restore) {
-				const button = document.createElement('button');
-				button.type = 'button'; button.className = 'notice-action'; button.textContent = '恢复记录';
-				button.addEventListener('click', restore);
-				$('notice').append(button);
-			}
 			$('notice').hidden = false;
 			clearTimeout(noticeTimer);
 			noticeTimer = setTimeout(() => {
 				if ($('notice').contains(document.activeElement)) return;
 				$('notice').hidden = true; $('notice').replaceChildren();
-			}, restore ? 8000 : 4000);
+			}, 4000);
 		}
 
 		function validate(value, kind = mode) {
-			const raw = value.trim();
+			let raw = value.trim();
 			if (!raw) return { error: '请填写源链接', empty: true };
 			if (raw.length > 8192) return { error: '链接过长，最多 8192 个字符' };
 			if (/\s/.test(raw)) return { error: '链接包含空格或换行，请检查完整地址' };
+			if (kind === 'clone') {
+				const ssh = raw.match(/^git@github\.com:([^?#]+)$/i) || raw.match(/^ssh:\/\/git@github\.com\/([^?#]+)$/i);
+				if (ssh) raw = 'https://github.com/' + ssh[1];
+			}
 			let url;
 			try { url = new URL(/^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : 'https://' + raw); }
 			catch { return { error: '无法识别链接，请检查地址' }; }
@@ -581,12 +570,17 @@ async function githubInterface() {
 			if (url.port || !['github.com', 'raw.githubusercontent.com', 'raw.github.com', 'gist.githubusercontent.com', 'gist.github.com'].includes(url.hostname)) return { error: '来源不受支持，请使用 GitHub 或 Gist 链接' };
 			url.hash = '';
 			const parts = url.pathname.split('/').filter(Boolean);
-			if (kind === 'clone') {
-				if (url.hostname !== 'github.com' || url.search || !/^\/[a-z0-9][a-z0-9-]*\/[a-z0-9_.-]+\/?$/i.test(url.pathname)) return { error: '请使用仓库根地址，例如 github.com/owner/repo' };
+			const repository = url.hostname === 'github.com' && !url.search && /^\/[a-z0-9][a-z0-9-]*\/[a-z0-9_.-]+\/?$/i.test(url.pathname);
+			if (kind === 'clone' || repository) {
+				if (!repository) return { error: '请使用仓库根地址，例如 github.com/owner/repo' };
 				const repo = parts[1].replace(/\.git$/i, '');
 				if (!repo || ['.', '..'].includes(repo)) return { error: '仓库名称无效，请检查地址' };
-				url.pathname = '/' + parts[0] + '/' + repo + '.git';
-				return { url, name: repo, repo: parts[0] + '/' + repo, type: 'Git Clone', path: repo + '.git', icon: 'terminal' };
+				if (kind === 'clone') {
+					url.pathname = '/' + parts[0] + '/' + repo + '.git';
+					return { url, name: repo, repo: parts[0] + '/' + repo, type: 'Git Clone', path: repo + '.git', icon: 'terminal' };
+				}
+				url.pathname = '/' + parts[0] + '/' + repo + '/archive/HEAD.zip';
+				return { url, name: repo + '-HEAD.zip', repo: parts[0] + '/' + repo, type: '默认分支源码', path: 'archive/HEAD.zip', icon: 'package' };
 			}
 			if (!FILE_PATTERNS.some(exp => exp.test(url.href))) return { error: '不支持此资源路径，请选择文件、Release 或源码归档链接' };
 			if (parts.length < 3) return { error: '资源路径不完整，请检查地址' };
@@ -647,17 +641,24 @@ async function githubInterface() {
 			setDetails(info);
 		}
 
-		function selectMode(next, updateRoute = true) {
-			if (next === 'history') {
-				$('history-disclosure').open = true;
-				renderHistory();
-				if (updateRoute) { try { history.replaceState(null, '', '#history'); } catch {} }
-				return;
+		function renderExamples() {
+			$('examples').replaceChildren();
+			for (const example of EXAMPLES[mode]) {
+				const button = document.createElement('button');
+				button.type = 'button'; button.className = 'example-button';
+				button.innerHTML = icon(example.icon) + '<span>' + example.label + '</span>';
+				const label = '填入' + example.label + '示例';
+				button.setAttribute('aria-label', label); button.title = label;
+				button.addEventListener('click', () => { source.value = example.url; changed(); source.focus(); });
+				$('examples').append(button);
 			}
+		}
+
+		function selectMode(next, updateRoute = true) {
+			if (!['file', 'clone'].includes(next)) return;
 			drafts[mode] = validate(source.value).error ? '' : source.value;
 			mode = next;
 			revision++;
-			$('history-disclosure').open = false;
 			if (updateRoute) { try { history.replaceState(null, '', '#' + mode); } catch {} }
 			for (const tab of document.querySelectorAll('[role="tab"]')) {
 				const selected = tab.dataset.mode === mode;
@@ -672,34 +673,8 @@ async function githubInterface() {
 			$('output-heading').textContent = mode === 'clone' ? '克隆命令' : '加速结果';
 			$('copy').setAttribute('aria-label', mode === 'clone' ? '复制克隆命令' : '复制加速链接');
 			$('copy').title = mode === 'clone' ? '复制克隆命令' : '复制加速链接';
+			renderExamples();
 			changed();
-		}
-
-		function renderHistory() {
-			$('history-list').replaceChildren();
-			$('history-empty').hidden = records.length > 0;
-			$('history-count').textContent = records.length;
-			$('history-count').hidden = records.length === 0;
-			$('clear-history').disabled = records.length === 0;
-			for (const record of records) {
-				const row = document.createElement('li');
-				row.className = 'history-row';
-				row.innerHTML = icon(record.icon) + '<div class="history-info"><span class="history-name"></span><span class="history-source"></span><p class="history-time"></p></div><div class="history-tools"></div>';
-				row.querySelector('.history-name').textContent = record.name;
-				row.querySelector('.history-source').textContent = record.repo + ' / ' + record.path;
-				row.querySelector('.history-time').textContent = (record.mode === 'clone' ? 'Git Clone' : '文件加速') + ' · ' + new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit' }).format(record.time);
-				for (const [name, label, action] of [
-					['arrow', '复用：' + record.name, () => { selectMode(record.mode); source.value = record.source; changed(); generate(); source.focus(); }],
-					['copy', '复制：' + record.name, () => copyText(record.output)],
-				]) {
-					const button = document.createElement('button');
-					button.type = 'button'; button.className = 'icon-button flat'; button.innerHTML = icon(name);
-					button.setAttribute('aria-label', label); button.title = label;
-					button.addEventListener('click', action);
-					row.querySelector('.history-tools').append(button);
-				}
-				$('history-list').append(row);
-			}
 		}
 
 		function generate() {
@@ -719,14 +694,6 @@ async function githubInterface() {
 			$('download').href = proxyUrl;
 			$('output-actions').hidden = mode === 'clone';
 			$('output-section').hidden = false;
-			// Query-bearing resources may be ephemeral; never retain them in history.
-			if (!info.url.search) {
-				const existing = records.findIndex(record => record.source === result.source && record.mode === mode);
-				if (existing !== -1) records.splice(existing, 1);
-				records.unshift({ ...result, time: Date.now() });
-				records.length = Math.min(records.length, 12);
-				renderHistory();
-			}
 			notify(mode === 'clone' ? '克隆命令已生成' : '加速链接已生成');
 		}
 
@@ -742,7 +709,7 @@ async function githubInterface() {
 		$('source-form').addEventListener('submit', event => { event.preventDefault(); generate(); });
 		source.addEventListener('input', changed);
 		source.addEventListener('keydown', event => {
-			if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); generate(); }
+			if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); generate(); }
 		});
 		$('clear').addEventListener('click', () => { source.value = ''; changed(); source.focus(); });
 		$('paste').addEventListener('click', async () => {
@@ -758,22 +725,6 @@ async function githubInterface() {
 			finally { button.disabled = false; }
 		});
 		$('copy').addEventListener('click', () => copyText(result?.output));
-		$('clear-history').addEventListener('click', () => {
-			const previous = records.slice();
-			records.length = 0; renderHistory();
-			notify('记录已清空', () => {
-				for (const record of previous) {
-					if (!records.some(current => current.source === record.source && current.mode === record.mode)) records.push(record);
-				}
-				records.length = Math.min(records.length, 12);
-				renderHistory(); notify('记录已恢复'); $('history-disclosure').open = true; $('clear-history').focus();
-			});
-		});
-		$('history-disclosure').addEventListener('toggle', () => {
-			const open = $('history-disclosure').open;
-			if (open) renderHistory();
-			try { history.replaceState(null, '', '#' + (open ? 'history' : mode)); } catch {}
-		});
 		const tabs = [...document.querySelectorAll('[role="tab"]')];
 		for (const tab of tabs) {
 			tab.addEventListener('click', () => selectMode(tab.dataset.mode));
@@ -786,7 +737,7 @@ async function githubInterface() {
 		}
 		window.addEventListener('hashchange', () => {
 			const next = location.hash.slice(1);
-			if (['file', 'clone', 'history'].includes(next)) selectMode(next, false);
+			if (['file', 'clone'].includes(next)) selectMode(next, false);
 		});
 
 		const html = document.documentElement;
@@ -857,8 +808,7 @@ async function githubInterface() {
 		setTheme(html.dataset.theme, false);
 		$('detail-instance').textContent = base;
 		const initialView = location.hash.slice(1);
-		selectMode(initialView === 'clone' ? 'clone' : 'file', initialView !== 'history');
-		if (initialView === 'history') selectMode('history', false);
+		selectMode(initialView === 'clone' ? 'clone' : 'file');
 	</script>
 </body>
 </html>`;

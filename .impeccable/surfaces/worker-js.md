@@ -52,14 +52,18 @@ mono. Coral marks the primary command and focus; mint marks validated links.
 A light counterpart keeps the same hierarchy and preserves theme choice.
 
 STORY: Choose file or clone, enter a supported source, generate a real URL or
-command, then copy or download it. Inspect details and reuse session records
-only when needed.
+command, then copy or download it. Repository roots generate default-branch
+source ZIPs; GitHub SSH repository addresses normalize to HTTPS Clone commands.
+Use a mode-specific example to fill the editable input, without auto-generating
+or downloading. Inspect resource details only when needed. No project-repository
+header link, recent records or static footer.
 
 FIRST VIEWPORT: A compact branded header on continuous graphite canvas, a 26px
 task title alongside two mode tabs, and a centered 832px input work area.
-The coral generation command sits directly below the input. There is no empty
+Compact bordered example choices sit below the input, followed by the coral
+generation command. The header contains the brand and theme control only. There is no empty
 result panel or sidebar; generated results appear inline. Resource details
-and recent records are native disclosures, closed by default.
+use a native disclosure, closed by default. The page ends after the work area.
 
 FORM: User-pinned Raycast-inspired Operate surface, code-led, superseding the
 previous Vercel reference on 2026-11-24. The user approved graphite depth,
@@ -80,3 +84,26 @@ provenance.
 - 默认深色；保留用户已有主题选择及浅色模式。主操作珊瑚红是用户确认的
   本项目改写，不是 Raycast 官方规范；不复制条纹、品牌或营销界面。
 - 不改代理核心、环境变量、内嵌 favicon 或许可证；本轮不推送、不部署。
+
+## 2026-11-24 / 功能补充与移除记录、页脚
+
+- 用户明确要求补充功能，同时不要最近记录和底部信息。
+- 完整移除最近记录的 DOM、样式、内存数组和恢复/清空交互，不做隐藏保留。
+- 移除静态页脚及说明链接；保留源许可证文件和内嵌版权注释。
+- 仓库主页在文件模式转换为 `archive/HEAD.zip`，不假定默认分支名。
+- Clone 支持 GitHub 的 `git@github.com:owner/repo.git` 和
+  `ssh://git@github.com/owner/repo.git`，仍拒绝凭据、非默认端口与伪造来源。
+- 保留两模式输入、复制/下载、折叠详情、主题和键盘操作；中文输入法组合中的
+  Enter 不触发生成。旧 `#history` 首次访问回到 `#file`。
+- 维持现有 tokens、布局与技术栈，不新增常驻说明区。本轮未推送或部署。
+
+## 2026-11-24 / 示例与按钮精修
+
+- 移除顶部“项目仓库”入口；保留品牌与主题切换。
+- 文件模式增加项目文件、源码 ZIP、Raw 文件示例；Clone 模式增加 HTTPS、SSH。
+- 示例点击只填入并聚焦输入，清除旧结果，不自动生成或下载。
+- 示例采用紧凑细边框按钮，可换行，不恢复历史记录或额外说明区。
+- 主命令、次命令、图标与选中 tab 增加静态高光和边缘层次，不给工具加外投影。
+- 指针按压采用 160ms ease-out 下沉与 .98 缩放，释放 120ms；状态层只改变 opacity。
+- 保留可见键盘焦点；键盘激活与 reduced-motion 不移动控件，禁用工具不响应悬停。
+- 保持既有主题、tokens、代理后端、favicon 和许可证，待浏览器验收后更新 GitHub。

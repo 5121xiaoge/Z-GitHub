@@ -90,12 +90,6 @@ typography:
     fontWeight: 400
     lineHeight: 1.85
     letterSpacing: "0"
-  mono-meta:
-    fontFamily: 'ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace'
-    fontSize: "11px"
-    fontWeight: 400
-    lineHeight: 1.8
-    letterSpacing: "0"
 rounded:
   tag: "4px"
   control: "6px"
@@ -165,6 +159,12 @@ components:
     typography: "{typography.title-small}"
     rounded: "{rounded.control}"
     padding: "0 14px"
+  example-choice:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.body}"
+    typography: "{typography.label}"
+    rounded: "{rounded.control}"
+    padding: "0 12px"
   status-tag:
     backgroundColor: "{colors.success-soft}"
     textColor: "{colors.success}"
@@ -178,10 +178,6 @@ components:
   disclosure-summary:
     backgroundColor: "transparent"
     textColor: "{colors.body}"
-  history-row:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    padding: "18px 0"
 ---
 
 # Design System: Z-GitHub
@@ -192,7 +188,7 @@ components:
 
 Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼、清晰且有高级质感，保留 Z-GitHub 自身标识。石墨色表面、珊瑚色命令、细边界与稳定排版构成层次，不借用参考品牌或营销结构。
 
-默认深色，保留用户已有主题选择及浅色对应。主要工作流保持单列，结果在生成后出现，资源详情和最近记录按需展开。内容精简但实际命令、技术文本和状态反馈仍完整；点击中心圆形主题揭示延续已有动效约定。
+默认深色，保留用户已有主题选择及浅色对应。主要工作流保持单列，结果在生成后出现，资源详情按需展开；顶部只保留品牌与主题按钮，不显示最近记录或静态页脚。模式专属示例作为输入快捷项，点击只填入，不自动生成或下载。内容精简但实际命令、技术文本和状态反馈仍完整；点击中心圆形主题揭示延续已有动效约定。
 
 **Key Characteristics:**
 - 默认石墨深色与浅色对应，同一组语义变量维持层次。
@@ -243,9 +239,9 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 - **Headline:** `headline` 是任务标题，紧凑半粗，不作为营销 hero。
 - **Title:** `title` 是结果标题；`title-small` 用于资源名和选中 tab。字段标签为固定 14px、字重 500，继承基础行高 1.6。
 - **Body:** `body` 是基础阅读与导航排版；说明中还实际使用固定的 13px 字号。
-- **Label:** `label` 是验证信息和辅助元数据；更小的固定 11px 用于详情名、时间和页脚。
+- **Label:** `label` 是验证信息和辅助元数据；更小的固定 11px 用于详情名和路由说明。
 - **Button / Tag:** `button`、`tag` 使用中等字重，在有限控件空间内维持可扫描性。
-- **Technical:** `mono-source` 用于源链接；`mono-output` 用于结果；`mono-meta` 用于历史来源。资源详情另使用 12px/1.75，折叠区计数使用 11px/20px 和 tabular numerals。
+- **Technical:** `mono-source` 用于源链接；`mono-output` 用于结果。资源详情另使用 12px/1.75，代码栏标签使用 11px/1.6。
 
 ### Named Rules
 
@@ -255,22 +251,23 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 
 ## Layout
 
-当前实现是居中单列工作区。主容器最大宽度 896px，桌面两侧至少 32px 且兼顾 safe-area；常规桌面可用内容宽度为 832px。头部与页脚沿用最大 1200px 的容器，延续页面底色和细横线边界。
+当前实现是居中单列工作区。主容器最大宽度 896px，桌面两侧至少 32px 且兼顾 safe-area；常规桌面可用内容宽度为 832px。头部沿用最大 1200px 的容器，延续页面底色和细横线边界。页面在工作区后结束，没有静态页脚。
 
 重复间距在 frontmatter 的 spacing 中记录，光学偏移与不对称内距保留在组件说明及 sidecar。桌面头部最小高度 72px，任务标题与两模式 tabs 并列，任务区留白 48px/32px。主生成命令在输入下方，结果仅生成后显示，输入至结果间距 32px。
 
-- **At 760px:** 容器两侧至少 20px，标题与 tabs 纵向排列，tabs 占满可用宽度、两个模式等分。头部最小高度 66px，tab、按钮和图标工具最小操作尺寸增为 44px，页脚允许换行。
-- **At 400px:** 容器两侧至少 16px，表单底部纵向排列，主命令占满可用宽度；资源详情由两列改为一列，结果及历史操作纵向排列。源链接字体改为固定 13px。
+- **At 760px:** 容器两侧至少 20px，标题与 tabs 纵向排列，tabs 占满可用宽度、两个模式等分。头部最小高度 66px，tab、按钮和图标工具最小操作尺寸增为 44px。
+- **At 400px:** 容器两侧至少 16px，表单底部纵向排列，主命令占满可用宽度；资源详情由两列改为一列，结果操作纵向排列。源链接字体改为固定 13px。
 
 输入可纵向调整，高度限制为 88px 至 240px；结果最大高度为 240px。长主机名、路径和元数据允许换行。资源名最多两行，完整技术结果仍保留在代码区。
 
 ## Elevation & Depth
 
-工具不使用阴影。深度来自页面、工具与选中状态的阶梯表面色以及 1px 边界；输入边界比结果及折叠区分隔更强。仅底部状态通知保留浮层阴影，不把它复用到常态工作工具。
+输入与结果工具不使用阴影。深度来自页面、工具与选中状态的阶梯表面色以及 1px 边界；输入边界比结果及折叠区分隔更强。按钮使用轻微静态高光与 inset 边缘强调，不增加外投影；仅底部状态通知保留浮层阴影，不把它复用到常态工作工具。
 
 ### Shadow Vocabulary
 
 - **Notice:** `0 4px 8px -4px #00000020, 0 12px 24px -8px #00000024`，用于底部状态通知。
+- **Control Edge:** `inset 0 1px 0 #ffffff14`；主按钮使用 `inset 0 1px 0 #ffffff30, inset 0 -1px 0 #00000012`。只作为静态按钮表面，不动画化阴影。
 
 ### Named Rules
 
@@ -280,7 +277,7 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 
 ## Shapes
 
-重复的小型标签及计数使用 `rounded.tag`，命令、图标控件和单个 tab 使用 `rounded.control`，输入、结果、tabs 外框和通知使用 `rounded.tool`。主工作区与折叠信息没有大圆角外壳。图标为内联 Lucide SVG，常见操作图标为 16px 至 20px，使用 currentColor、圆端点和 1.8 描边宽度。
+重复的小型标签使用 `rounded.tag`，命令、图标控件和单个 tab 使用 `rounded.control`，输入、结果、tabs 外框和通知使用 `rounded.tool`。主工作区与折叠信息没有大圆角外壳。图标为内联 Lucide SVG，常见操作图标为 16px 至 20px，使用 currentColor、圆端点和 1.8 描边宽度。
 
 圆形属于主题揭示的遮罩，不属于卡片形状规则；不要因紧凑圆角策略移除现有圆形主题切换。
 
@@ -290,11 +287,15 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 
 主命令采用珊瑚填充，次命令保持轻边框工具表面。两者共享控件圆角、8px/16px 内距、8px 图文间距和中等字重。常态最小高度 40px，移动端最小高度 44px；主生成命令桌面最小宽度 148px。
 
-悬停仅在精细指针设备启用：主命令使用 `press`，次命令使用 `subtle`。按压向下移动 1px，采用 120ms ease-out 的 transform transition。键盘焦点为 2px `accent` outline、4px offset。禁用保持布局，透明度为 .45。
+按钮表面带静态纵向高光。悬停仅在精细指针设备启用：主命令使用 `press`，次命令使用 `subtle`，覆盖层 opacity 从 0 到 .04。按压覆盖层加深至 .08，指针按压向下移动 1px 并缩至 .98，按下 160ms、释放 120ms ease-out；只动画化 transform 和 opacity。键盘激活不缩放或位移，焦点为 2px `accent` outline、4px offset。禁用保持布局，透明度为 .45，不响应悬停或按压。减弱动态时立即切换表面状态且不移动按钮。下载链接保留按钮文字颜色，不继承普通链接悬停下划线。
 
 ### Icon Buttons
 
 标准图标按钮有细边框，flat 变体无可见常态边框与背景。桌面尺寸 40px，输入内部工具为 34px；760px 及以下两者均为 44px。复制、粘贴、清空、主题等工具保持 SVG 图标、`aria-label` 与原生 `title`。
+
+### Example Choices
+
+输入下方提供带 Lucide 图标、轻表面和细边框的快捷按钮，12px 中等字重、0/12px 内距和控件圆角。组内间距 8px，允许换行；桌面最小高度 40px，移动端 44px。文件模式显示项目文件、源码 ZIP、Raw 文件，Clone 模式显示 HTTPS、SSH。点击只填入并聚焦输入、清除旧结果，不自动生成、不启动传输。它不是独立说明区或记录列表。
 
 ### Inputs / Fields
 
@@ -302,19 +303,19 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 
 ### Navigation
 
-模式导航是两项文字加 SVG 的分段 tabs。外框为工具圆角、1px 边界和 4px 内距，单项控件圆角、常态最小高度 40px、0/14px 内距。选中项采用 `subtle` 填充、`ink` 文字与字重 600，不再使用底部选中线。保留 tablist / tab 语义、箭头、Home 和 End 键；最近记录不是第三个 tab。
+模式导航是两项文字加 SVG 的分段 tabs。外框为工具圆角、1px 边界和 4px 内距，单项控件圆角、常态最小高度 40px、0/14px 内距。选中项采用 `subtle` 填充、`line-strong` 边界、轻微静态高光、`ink` 文字与字重 600；未选中项保留等宽透明边界，切换不改尺寸。保留 tablist / tab 语义、箭头、Home 和 End 键；只有 file / clone 两个模式。
 
 ### Chips
 
-状态标签使用小圆角、`success-soft` 表面与 `success` 文字，内距 3px/8px、图标间距 4px。它表达有效/已生成结果，不作为可点击筛选器。历史折叠区计数为中性标签，不借用成功色。
+状态标签使用小圆角、`success-soft` 表面与 `success` 文字，内距 3px/8px、图标间距 4px。它表达有效/已生成结果，不作为可点击筛选器。
 
 ### Cards / Containers
 
 结果容器使用工具圆角与细边界，无阴影。生成后资源摘要、深色技术输出及下载操作构成一个连续工具；摘要桌面内距 18px/20px，操作区为 14px/20px、向末端对齐。未生成时不显示结果区，不保留大块等待面板。代码区保留可选择文字和复制图标，原始资源入口收纳在详情折叠区。
 
-### Disclosures / List Rows
+### Resource Disclosure
 
-资源详情和最近记录使用原生 `details` / `summary`，默认关闭。summary 最小高度 56px，图标间距 10px，末端 chevron 在展开时旋转 90deg，采用 160ms ease-out；hover 改变文字而不添加阴影。内容底内距 24px，历史行内距 18px/0，细线、资源名、等宽来源和图标工具支持扫描。没有示例列表。
+资源详情使用原生 `details` / `summary`，默认关闭。summary 最小高度 56px，图标间距 10px，末端 chevron 在展开时旋转 90deg，采用 160ms ease-out；hover 改变文字而不添加阴影。内容底内距 24px，等宽来源和资源路径支持扫描。详情中没有示例列表或最近记录。
 
 ### Theme Reveal
 
@@ -324,7 +325,7 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 
 ### Notice
 
-底部居中通知使用工具圆角、较强边界和通知阴影，内距 12px/18px，最大宽度为视口减 32px，并考虑底部 safe-area。它复用页面主题，不额外建立颜色体系；恢复记录操作使用珊瑚色文字命令。
+短暂的操作通知使用工具圆角、较强边界和通知阴影，内距 12px/18px，最大宽度为视口减 32px，并考虑底部 safe-area。它仅反馈生成、复制或剪贴板错误，不是静态底部信息，不带恢复记录操作。
 
 ## Do's and Don'ts
 
@@ -336,7 +337,7 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 - **Do** 在深浅主题中复用语义变量，并保留代码区的深色可读性。
 - **Do** 保留移动端主要命令、44px 控件及键盘可见焦点。
 - **Do** 保留 520ms ease-out 主题揭示，同时尊重 reduced-motion 与直接切换路径。
-- **Do** 用原生折叠区按需展示详情和历史，保留其键盘焦点与状态语义。
+- **Do** 用原生折叠区按需展示资源详情，保留其键盘焦点与状态语义。
 
 ### Don't:
 
@@ -345,4 +346,4 @@ Z-GitHub 的视觉方向是已确认的 Raycast-inspired 工作界面：精炼�
 - **Don't** 将折叠信息、分区和行列表装进嵌套卡片。
 - **Don't** 用装饰性大阴影、渐变光斑或扩大圆角替代现有信息层级。
 - **Don't** 用字符图标、远程图标字体或无法选择的图像替代实际 SVG 操作与命令文字。
-- **Don't** 把 sidecar 合成 tonal ramps 当作已应用 tokens，或恢复已移除的示例、第三个 tab 和等待结果面板。
+- **Don't** 把 sidecar 合成 tonal ramps 当作已应用 tokens，或恢复项目仓库入口、最近记录、静态页脚、第三个 tab 和等待结果面板。

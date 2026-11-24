@@ -26,7 +26,7 @@ async function fixture({ prefix = '/', jsdelivr = false } = {}) {
     location: { origin: 'https://proxy.example' },
   });
   vm.runInContext(scripts.at(-1).split("\n\t\t$('source-form').addEventListener")[0] +
-    '\nglobalThis.validateInput = validate; globalThis.patterns = FILE_PATTERNS;', client);
+    '\nglobalThis.validateInput = validate; globalThis.patterns = FILE_PATTERNS; globalThis.examples = EXAMPLES;', client);
   return { context, html, client, calls, script: scripts.at(-1) };
 }
 
@@ -103,7 +103,6 @@ test('homepage includes accessible navigation and bounded long-content surfaces'
   assert.match(html, /inputmode="url"/);
   assert.match(html, /#output[^}]*max-height: 240px/);
   assert.match(html, /#detail-path[^}]*max-height: 105px/);
-  assert.match(html, /恢复记录/);
   assert.match(html, /history\.replaceState/);
 });
 
@@ -112,17 +111,76 @@ test('focused first view uses progressive disclosure without duplicate actions',
   assert.equal([...html.matchAll(/<button[^>]*\brole="tab"/g)].length, 2);
   assert.match(html, /id="output-section"[^>]* hidden/);
   assert.match(html, /<details class="disclosure" id="resource-disclosure">/);
-  assert.match(html, /<details class="disclosure" id="history-disclosure">/);
-  assert.doesNotMatch(html, /id="(?:examples|copy-command|output-empty|instance-host|tab-history)"/);
+  assert.doesNotMatch(html, /history-disclosure|renderHistory|const records|最近记录|恢复记录|<footer|footer-inner|footer-links/);
+  assert.doesNotMatch(html, /id="(?:copy-command|output-empty|instance-host|tab-history)"/);
+  assert.doesNotMatch(html, /项目仓库|source-link|top-actions/);
+  assert.match(html, /class="examples" role="group" aria-label="示例链接"/);
   assert.match(html, /summary:focus-visible/);
 });
 
-test('history deep link leaves the primary form initialized and usable', async () => {
+test('compact examples use public links supported by their active mode', async t => {
+  const { client } = await fixture();
+  assert.equal(client.examples.file.length, 3);
+  assert.equal(client.examples.clone.length, 2);
+  for (const kind of ['file', 'clone']) {
+    for (const example of client.examples[kind]) {
+      await t.test(kind + ': ' + example.label, () => {
+        assert.equal(client.validateInput(example.url, kind).error, undefined);
+        assert.match(example.url, /^(?:https:\/\/|git@github\.com:)/);
+      });
+    }
+  }
+});
+
+test('controls have layered surfaces and gated, accessible press feedback', async () => {
+  const { html } = await fixture();
+  assert.match(html, /\.example-button\s*\{[^}]*border: 1px solid var\(--line\)[^}]*background: var\(--surface\)/);
+  assert.match(html, /\.button\.primary\s*\{[^}]*background-image: linear-gradient[^}]*box-shadow: inset/);
+  assert.match(html, /:active:not\(:disabled\):not\(:focus-visible\)[^{]*\{[^}]*translateY\(1px\) scale\(\.98\)/);
+  assert.match(html, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.icon-button:hover:not\(:disabled\)/);
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)[\s\S]*transform: none !important/);
+  assert.match(html, /a:not\(\.button\):hover/);
+  assert.doesNotMatch(html, /transition:\s*all|transition:[^;{}]*(?:box-shadow|background|filter)/);
+});
+
+test('example buttons fill editable input without generating or retaining old results', async () => {
+  const { elements, actions } = await runtimeFixture();
+  const source = elements.get('source');
+  const examples = elements.get('examples');
+  assert.equal(examples.children.length, 3);
+  const fileExample = examples.children[0];
+  assert.equal(fileExample.type, 'button');
+  assert.equal(fileExample.attributes['aria-label'], '填入项目文件示例');
+  fileExample.listeners.click();
+  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub/blob/main/_worker.js');
+  assert.equal(elements.get('output-section').hidden, true);
+  actions.generate();
+  elements.get('resource-disclosure').open = true;
+  examples.children[1].listeners.click();
+  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub');
+  assert.equal(elements.get('output-section').hidden, true);
+  assert.equal(elements.get('output').textContent, '');
+  assert.equal(elements.get('resource-disclosure').open, false);
+  assert.equal(elements.get('clear').disabled, false);
+  actions.selectMode('clone');
+  assert.equal(examples.children.length, 2);
+  assert.equal(examples.children[1].attributes['aria-label'], '填入SSH示例');
+  examples.children[1].listeners.click();
+  assert.equal(source.value, 'git@github.com:5121xiaoge/Z-GitHub.git');
+  assert.equal(elements.get('output-section').hidden, true);
+  actions.generate();
+  assert.equal(elements.get('output').textContent, 'git clone https://proxy.example/https://github.com/5121xiaoge/Z-GitHub.git');
+  actions.selectMode('file');
+  assert.equal(examples.children.length, 3);
+  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub');
+});
+
+test('removed history deep link falls back to the usable file form', async () => {
   const { elements, location, actions } = await runtimeFixture('#history');
-  assert.equal(elements.get('history-disclosure').open, true);
+  assert.equal(elements.has('history-disclosure'), false);
   assert.equal(elements.get('source-label').textContent, '源文件链接');
   assert.equal(elements.get('panel-work').hidden, false);
-  assert.equal(location.hash, '#history');
+  assert.equal(location.hash, '#file');
   elements.get('source').value = 'https://github.com/o/r/archive/main.zip';
   actions.changed();
   actions.generate();
@@ -130,7 +188,7 @@ test('history deep link leaves the primary form initialized and usable', async (
   assert.equal(elements.get('output').textContent, 'https://proxy.example/https://github.com/o/r/archive/main.zip');
 });
 
-test('opening history preserves results; edits hide stale output and details', async () => {
+test('unknown modes preserve results; edits hide stale output and details', async () => {
   const { elements, actions } = await runtimeFixture();
   elements.get('source').value = 'https://github.com/o/r/blob/main/f.txt';
   actions.changed();
@@ -162,27 +220,59 @@ test('clone shares one copy action and retains separate mode drafts', async () =
   assert.equal(elements.get('copy').attributes['aria-label'], '复制克隆命令');
   actions.selectMode('history');
   actions.selectMode('file');
-  assert.equal(elements.get('history-disclosure').open, false);
   assert.equal(source.value, 'https://github.com/o/r/blob/main/f.txt');
   assert.equal(location.hash, '#file');
   actions.selectMode('clone');
   assert.equal(source.value, 'github.com/owner/repo');
 });
 
-test('cleared records can be restored into an opened, focusable disclosure', async () => {
+test('repository links generate default-branch source archives without adding records', async () => {
   const { elements, actions } = await runtimeFixture();
-  elements.get('source').value = 'https://github.com/o/r/archive/main.zip';
+  elements.get('source').value = 'https://github.com/o/r';
   actions.changed();
   actions.generate();
-  assert.equal(elements.get('history-count').hidden, false);
-  assert.equal(elements.get('history-list').children.length, 1);
-  elements.get('clear-history').listeners.click();
-  assert.equal(elements.get('history-count').hidden, true);
-  assert.equal(elements.get('history-list').children.length, 0);
-  elements.get('history-disclosure').open = false;
-  elements.get('notice').children[1].listeners.click();
-  assert.equal(elements.get('history-disclosure').open, true);
-  assert.equal(elements.get('history-list').children.length, 1);
+  assert.equal(elements.get('output').textContent, 'https://proxy.example/https://github.com/o/r/archive/HEAD.zip');
+  assert.equal(elements.get('resource-name').textContent, 'r-HEAD.zip');
+  assert.equal(elements.get('detail-type').textContent, '默认分支源码');
+  assert.equal(elements.has('history-list'), false);
+});
+
+test('IME composition and Shift+Enter do not submit; Enter still generates', async () => {
+  const { elements } = await runtimeFixture();
+  const source = elements.get('source');
+  source.value = 'https://github.com/o/r';
+  for (const flags of [{ isComposing: true }, { keyCode: 229 }, { shiftKey: true }]) {
+    let prevented = false;
+    source.listeners.keydown({ key: 'Enter', ...flags, preventDefault: () => { prevented = true; } });
+    assert.equal(prevented, false);
+    assert.equal(elements.get('output-section').hidden, true);
+  }
+  let prevented = false;
+  source.listeners.keydown({ key: 'Enter', preventDefault: () => { prevented = true; } });
+  assert.equal(prevented, true);
+  assert.equal(elements.get('output-section').hidden, false);
+});
+
+test('repository convenience paths remain public, supported and normalized', async t => {
+  const { client } = await fixture();
+  for (const value of [
+    'github.com/owner/repo', 'https://github.com/owner/repo.git',
+    'https://github.com/owner/repo/', 'https://GitHub.com/owner/repo.git/',
+  ]) {
+    await t.test(value, () => {
+      const result = client.validateInput(value, 'file');
+      assert.equal(result.error, undefined);
+      assert.equal(result.url.href, 'https://github.com/owner/repo/archive/HEAD.zip');
+      assert.equal(result.type, '默认分支源码');
+      assert.ok(client.patterns.some(pattern => pattern.test(result.url.href)));
+    });
+  }
+  for (const value of [
+    'https://github.com/owner/.git', 'https://github.com/owner/repo?tab=readme-ov-file',
+    'https://github.com/owner/repo?token=synthetic', 'https://github.com.evil.example/owner/repo',
+  ]) {
+    await t.test(value, () => assert.ok(client.validateInput(value, 'file').error));
+  }
 });
 
 test('supported file resource matrix', async t => {
@@ -216,7 +306,7 @@ test('reject unsupported, malformed and credential-bearing inputs', async t => {
     'https://github.com.evil.example/o/r/blob/main/f',
     'https://example.com/o/r/blob/main/f', 'https://github.com:8443/o/r/blob/main/f',
     'https://github.com/o/r/tree/main', 'https://github.com/o/r/suites/123',
-    'https://github.com/o/r', 'https://github.com/o/r/blob/main/file\nother',
+    'https://github.com/o', 'https://github.com/o/r/blob/main/file\nother',
     'https://user:fake@github.com/o/r/blob/main/file',
     'https://github.com/o/r/blob/main/file?token=synthetic',
     'https://github.com/o/r/blob/main/file?access_token=synthetic',
@@ -235,13 +325,18 @@ test('clone URL normalization and shell-safe repository names', async t => {
   for (const value of [
     'github.com/owner/repo', 'https://github.com/owner/repo.git',
     'https://github.com/owner/repo/', 'https://github.com/owner/repo.git/',
+    'git@github.com:owner/repo.git', 'ssh://git@github.com/owner/repo.git',
+    'git@GitHub.com:owner/repo', 'ssh://git@github.com/owner/repo/',
   ]) {
     await t.test(value, () => {
       assert.equal(client.validateInput(value, 'clone').url.href, 'https://github.com/owner/repo.git');
     });
   }
   for (const value of [
-    'git@github.com:owner/repo.git', 'https://raw.githubusercontent.com/owner/repo/main/file',
+    'git@github.com.evil.example:owner/repo.git', 'ssh://git:fake@github.com/owner/repo.git',
+    'ssh://git@github.com:2222/owner/repo.git', 'git@github.com:owner/repo.git?token=synthetic',
+    'git@github.com:owner/repo.git#access_token=synthetic',
+    'git@github.com:owner/repo%24%28id%29', 'https://raw.githubusercontent.com/owner/repo/main/file',
     'https://github.com/owner/repo/blob/main/file', 'https://github.com/owner/repo?download=1',
     'https://github.com/owner/repo%24%28id%29', 'https://github.com/owner/.git',
   ]) {
