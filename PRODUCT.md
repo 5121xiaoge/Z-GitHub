@@ -22,9 +22,13 @@ Cloudflare Workers / Pages proxy.
 
 ## Brand Commitments
 
-The user approved the local Vercel design reference, enterprise-level quality,
-and a richer premium finish rather than an overly minimal interface.
-Preserve the Z-GitHub identity; do not copy Vercel branding.
+The user approved the local Raycast design reference on 2026-11-24, replacing
+the earlier Vercel reference after finding the interface too dense and complex.
+Keep enterprise-level quality and a premium finish through graphite surfaces,
+fine boundaries and restrained coral accents. Reduce content shown at once
+without removing the core workflows or their accessible states.
+Preserve the Z-GitHub identity; do not copy Raycast branding or marketing.
+Retain the light theme and the existing theme preference and motion behavior.
 
 ## Evidence on Hand
 

@@ -27,7 +27,61 @@ async function fixture({ prefix = '/', jsdelivr = false } = {}) {
   });
   vm.runInContext(scripts.at(-1).split("\n\t\t$('source-form').addEventListener")[0] +
     '\nglobalThis.validateInput = validate; globalThis.patterns = FILE_PATTERNS;', client);
-  return { context, html, client, calls };
+  return { context, html, client, calls, script: scripts.at(-1) };
+}
+
+async function runtimeFixture(hash = '') {
+  const { html, script } = await fixture();
+  let document;
+  class Element {
+    value = '';
+    hidden = false;
+    open = false;
+    dataset = {};
+    children = [];
+    attributes = {};
+    listeners = {};
+    descendants = new Map();
+    style = { setProperty() {} };
+    addEventListener(name, listener) { this.listeners[name] = listener; }
+    setAttribute(name, value) { this.attributes[name] = value; }
+    removeAttribute(name) { delete this.attributes[name]; }
+    toggleAttribute(name, value) { if (value) this.attributes[name] = ''; else delete this.attributes[name]; }
+    replaceChildren(...children) { this.children = children; }
+    append(...children) { this.children.push(...children); }
+    contains(element) { return this.children.includes(element); }
+    focus() { document.activeElement = this; }
+    querySelector(selector) {
+      if (!this.descendants.has(selector)) this.descendants.set(selector, new Element());
+      return this.descendants.get(selector);
+    }
+  }
+  const elements = new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(match => [match[1], new Element()]));
+  const tabs = ['file', 'clone'].map(mode => {
+    const tab = elements.get('tab-' + mode);
+    tab.dataset.mode = mode;
+    return tab;
+  });
+  const root = new Element();
+  root.dataset.theme = 'dark';
+  const location = { origin: 'https://proxy.example', hash };
+  document = {
+    documentElement: root, visibilityState: 'visible', activeElement: null,
+    getElementById: id => elements.get(id) ?? null,
+    querySelectorAll: () => tabs, querySelector: () => new Element(),
+    createElement: () => new Element(), addEventListener() {},
+  };
+  const copied = [];
+  const context = vm.createContext({
+    URL, document, location, Intl, Element,
+    window: { addEventListener() {} },
+    history: { replaceState: (_state, _title, route) => { location.hash = route; } },
+    matchMedia: () => ({ matches: false, addEventListener() {} }),
+    localStorage: { setItem() {} }, setTimeout: () => 1, clearTimeout() {},
+    navigator: { clipboard: { writeText: async text => copied.push(text) } },
+  });
+  vm.runInContext(script + '\nglobalThis.actions = { selectMode, changed, generate };', context);
+  return { elements, context, location, copied, actions: context.actions };
 }
 
 test('embedded scripts compile and the homepage is standalone', async () => {
@@ -51,6 +105,84 @@ test('homepage includes accessible navigation and bounded long-content surfaces'
   assert.match(html, /#detail-path[^}]*max-height: 105px/);
   assert.match(html, /恢复记录/);
   assert.match(html, /history\.replaceState/);
+});
+
+test('focused first view uses progressive disclosure without duplicate actions', async () => {
+  const { html } = await fixture();
+  assert.equal([...html.matchAll(/<button[^>]*\brole="tab"/g)].length, 2);
+  assert.match(html, /id="output-section"[^>]* hidden/);
+  assert.match(html, /<details class="disclosure" id="resource-disclosure">/);
+  assert.match(html, /<details class="disclosure" id="history-disclosure">/);
+  assert.doesNotMatch(html, /id="(?:examples|copy-command|output-empty|instance-host|tab-history)"/);
+  assert.match(html, /summary:focus-visible/);
+});
+
+test('history deep link leaves the primary form initialized and usable', async () => {
+  const { elements, location, actions } = await runtimeFixture('#history');
+  assert.equal(elements.get('history-disclosure').open, true);
+  assert.equal(elements.get('source-label').textContent, '源文件链接');
+  assert.equal(elements.get('panel-work').hidden, false);
+  assert.equal(location.hash, '#history');
+  elements.get('source').value = 'https://github.com/o/r/archive/main.zip';
+  actions.changed();
+  actions.generate();
+  assert.equal(elements.get('output-section').hidden, false);
+  assert.equal(elements.get('output').textContent, 'https://proxy.example/https://github.com/o/r/archive/main.zip');
+});
+
+test('opening history preserves results; edits hide stale output and details', async () => {
+  const { elements, actions } = await runtimeFixture();
+  elements.get('source').value = 'https://github.com/o/r/blob/main/f.txt';
+  actions.changed();
+  actions.generate();
+  const output = elements.get('output').textContent;
+  actions.selectMode('history');
+  assert.equal(elements.get('output').textContent, output);
+  assert.equal(elements.get('output-section').hidden, false);
+  elements.get('resource-disclosure').open = true;
+  elements.get('source').value = 'https://example.com/unsupported';
+  actions.changed();
+  assert.equal(elements.get('output-section').hidden, true);
+  assert.equal(elements.get('resource-disclosure').open, false);
+  assert.equal(elements.get('output').textContent, '');
+  assert.equal(elements.get('download').attributes.href, undefined);
+});
+
+test('clone shares one copy action and retains separate mode drafts', async () => {
+  const { elements, actions, location } = await runtimeFixture();
+  const source = elements.get('source');
+  source.value = 'https://github.com/o/r/blob/main/f.txt';
+  actions.changed();
+  actions.selectMode('clone');
+  source.value = 'github.com/owner/repo';
+  actions.changed();
+  actions.generate();
+  assert.equal(elements.get('output').textContent, 'git clone https://proxy.example/https://github.com/owner/repo.git');
+  assert.equal(elements.get('output-actions').hidden, true);
+  assert.equal(elements.get('copy').attributes['aria-label'], '复制克隆命令');
+  actions.selectMode('history');
+  actions.selectMode('file');
+  assert.equal(elements.get('history-disclosure').open, false);
+  assert.equal(source.value, 'https://github.com/o/r/blob/main/f.txt');
+  assert.equal(location.hash, '#file');
+  actions.selectMode('clone');
+  assert.equal(source.value, 'github.com/owner/repo');
+});
+
+test('cleared records can be restored into an opened, focusable disclosure', async () => {
+  const { elements, actions } = await runtimeFixture();
+  elements.get('source').value = 'https://github.com/o/r/archive/main.zip';
+  actions.changed();
+  actions.generate();
+  assert.equal(elements.get('history-count').hidden, false);
+  assert.equal(elements.get('history-list').children.length, 1);
+  elements.get('clear-history').listeners.click();
+  assert.equal(elements.get('history-count').hidden, true);
+  assert.equal(elements.get('history-list').children.length, 0);
+  elements.get('history-disclosure').open = false;
+  elements.get('notice').children[1].listeners.click();
+  assert.equal(elements.get('history-disclosure').open, true);
+  assert.equal(elements.get('history-list').children.length, 1);
 });
 
 test('supported file resource matrix', async t => {

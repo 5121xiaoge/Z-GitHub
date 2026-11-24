@@ -252,89 +252,77 @@ async function githubInterface() {
 	// Serialize the backend patterns without losing escapes in the HTML template.
 	const json = value => JSON.stringify(value).replace(/</g, '\\u003c')
 	return String.raw`<!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="theme-color" content="#fafafa">
+	<meta name="theme-color" content="#0b0c0f">
 	<meta name="referrer" content="no-referrer">
 	<title>Z-GitHub | GitHub 资源加速</title>
 	<script>
 		try {
 			const theme = localStorage.getItem('zgithub.theme');
-			document.documentElement.dataset.theme = theme === 'dark' || theme === 'light' ? theme :
-				(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			document.documentElement.dataset.theme = theme === 'dark' || theme === 'light' ? theme : 'dark';
 		} catch {}
 	</script>
 	<style>
 		:root {
 			color-scheme: light;
-			--page: #fafafa; --surface: #fff; --subtle: #f3f4f6; --ink: #171717;
-			--body: #51555d; --muted: #656b75; --line: #e3e5e8; --line-strong: #c4c8cf;
-			--accent: #0761d1; --accent-soft: #edf4ff; --success: #147d46; --success-soft: #edf8f0;
-			--error: #bd2727; --error-soft: #fff1f1; --code: #191b20; --code-ink: #edf0f5;
-			--primary: #171717; --on-primary: #fff; --press: #303237;
-			--shadow: 0 1px 2px #00000004, 0 4px 8px -4px #00000012;
+			--page: #f5f6f8; --surface: #fff; --subtle: #eceef2; --ink: #191b20;
+			--body: #4e545f; --muted: #666d79; --line: #dfe2e8; --line-strong: #b4bac5;
+			--accent: #be353b; --success: #147d46; --success-soft: #e8f6ee;
+			--error: #b4232c; --code: #111317; --code-ink: #edf0f5;
+			--primary: #be353b; --on-primary: #fff; --press: #a32931;
 			--mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 		}
 		:root[data-theme="dark"] {
 			color-scheme: dark;
-			--page: #101113; --surface: #17181b; --subtle: #212328; --ink: #f1f2f4;
-			--body: #b4b8c0; --muted: #9a9fa9; --line: #2c2f35; --line-strong: #555b65;
-			--accent: #8bb9ff; --accent-soft: #192c47; --success: #7ad7a0; --success-soft: #152f23;
-			--error: #ff9b9b; --error-soft: #381d21; --code: #0b0c0e; --code-ink: #edf0f5;
-			--primary: #f1f2f4; --on-primary: #151619; --press: #d0d3d9;
-			--shadow: 0 1px 2px #00000020, 0 4px 8px -4px #00000040;
+			--page: #0b0c0f; --surface: #14161a; --subtle: #202329; --ink: #f4f4f6;
+			--body: #c5c8d0; --muted: #969ca8; --line: #292d35; --line-strong: #505763;
+			--accent: #ff747a; --success: #59d499; --success-soft: #132c23;
+			--error: #ff9c9f; --code: #090b0e; --code-ink: #edf0f5;
+			--primary: #ff747a; --on-primary: #250b10; --press: #ff8c91;
 		}
 		* { box-sizing: border-box; letter-spacing: 0; }
 		[hidden] { display: none !important; }
-		body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; }
+		body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; background: var(--page); color: var(--ink); font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; }
 		button, input, textarea { font: inherit; }
-		button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+		button, a, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 		button { cursor: pointer; }
 		button:disabled { cursor: not-allowed; opacity: .45; }
 		a { color: inherit; text-decoration: none; text-underline-offset: 4px; }
-		button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+		button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 		::selection { background: var(--accent); color: var(--surface); }
 		textarea { caret-color: var(--accent); scrollbar-color: var(--line-strong) var(--surface); }
 		h1, h2, h3, p { margin: 0; }
-		h1 { font-size: 28px; line-height: 1.4; font-weight: 600; text-wrap: balance; }
+		h1 { font-size: 26px; line-height: 1.4; font-weight: 600; text-wrap: balance; }
 		h2 { font-size: 16px; line-height: 1.5; font-weight: 600; text-wrap: balance; }
 		h3 { font-size: 14px; font-weight: 600; }
 		.icon { flex: 0 0 auto; vertical-align: middle; }
-		.wrap { max-width: 1200px; padding: 0 max(32px, env(safe-area-inset-right)) 0 max(32px, env(safe-area-inset-left)); margin: 0 auto; }
+		.wrap { width: 100%; max-width: 896px; padding: 0 max(32px, env(safe-area-inset-right)) 0 max(32px, env(safe-area-inset-left)); margin: 0 auto; }
 		.skip-link { position: fixed; top: 12px; left: 16px; z-index: 20; padding: 8px 16px; border-radius: 6px; background: var(--primary); color: var(--on-primary); transform: translateY(-200%); }
 		.skip-link:focus { transform: translateY(0); }
-		.topbar { background: var(--surface); border-bottom: 1px solid var(--line); }
-		.topbar-inner { min-height: 76px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+		.topbar { border-bottom: 1px solid var(--line); }
+		.topbar-inner { max-width: 1200px; min-height: 72px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 		.brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; white-space: nowrap; }
 		.brand img { width: 32px; height: 32px; }
-		.brand-divider { width: 1px; height: 24px; background: var(--line); margin: 0 8px; }
-		.brand-context { font-size: 13px; color: var(--body); font-weight: 400; }
-		.top-actions, .inline { display: flex; align-items: center; gap: 12px; }
+		.top-actions { display: flex; align-items: center; gap: 12px; }
 		.source-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--body); }
 		.source-link .icon { width: 16px; height: 16px; }
 		.icon-button { width: 40px; height: 40px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--body); flex-shrink: 0; transition: transform 120ms ease-out; }
 		.icon-button.flat { border-color: transparent; background: transparent; }
 		.icon-button:active, .button:active { transform: translateY(1px); }
-		.tabs-band { background: var(--surface); border-bottom: 1px solid var(--line); }
-		.tabs { display: flex; align-items: stretch; gap: 28px; min-height: 55px; }
-		.tab { position: relative; display: flex; gap: 8px; align-items: center; padding: 0 2px; background: none; border: 0; color: var(--body); white-space: nowrap; }
+		.tabs { display: flex; align-items: stretch; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+		.tab { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 6px; background: none; border: 0; color: var(--muted); white-space: nowrap; }
 		.tab .icon { width: 17px; height: 17px; }
-		.tab[aria-selected="true"] { color: var(--ink); font-weight: 600; }
-		.tab[aria-selected="true"]::after { content: ""; position: absolute; height: 2px; bottom: -1px; inset-inline: 0; background: var(--ink); }
+		.tab[aria-selected="true"] { background: var(--subtle); color: var(--ink); font-weight: 600; }
 		.count { font: 11px/20px var(--mono); font-variant-numeric: tabular-nums; background: var(--subtle); border-radius: 4px; min-width: 23px; text-align: center; color: var(--body); }
-		main { min-height: calc(100svh - 215px); }
-		.intro { padding: 36px 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-		.intro p { color: var(--body); font-size: 13px; margin-top: 7px; }
-		.instance { text-align: right; font-size: 12px; color: var(--muted); max-width: 35%; }
-		.instance code { display: block; font: 12px/1.8 var(--mono); color: var(--body); overflow-wrap: anywhere; }
-		.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 276px; border-top: 1px solid var(--line); }
-		.workarea { min-width: 0; padding: 30px 40px 36px 0; }
+		main { flex: 1; }
+		.intro { padding: 48px 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+		.workarea { min-width: 0; padding-bottom: 48px; }
 		.section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-		.section-head .metadata { font-size: 12px; color: var(--muted); min-width: 0; text-align: right; overflow-wrap: anywhere; }
-		.field-label { display: block; font-weight: 600; font-size: 16px; }
-		.input-shell { display: flex; gap: 14px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 16px 12px 12px 16px; background: var(--surface); box-shadow: var(--shadow); }
+		.field-label { display: block; font-weight: 500; font-size: 14px; color: var(--body); }
+		.input-shell { display: flex; gap: 14px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 20px 12px 16px 20px; background: var(--surface); }
 		.input-shell:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 		.input-shell[data-invalid] { border-color: var(--error); }
 		.input-shell > .icon { margin-top: 3px; color: var(--muted); }
@@ -345,6 +333,7 @@ async function githubInterface() {
 		.input-tools .icon { width: 17px; height: 17px; }
 		.form-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 16px; }
 		.validation { display: flex; align-items: flex-start; gap: 7px; color: var(--muted); font-size: 12px; min-height: 22px; min-width: 0; }
+		.validation[data-state="empty"] { visibility: hidden; }
 		.validation .icon { width: 15px; height: 15px; margin-top: 2px; }
 		.validation[data-state="valid"] { color: var(--success); }
 		.validation[data-state="error"] { color: var(--error); }
@@ -353,13 +342,9 @@ async function githubInterface() {
 		.button.primary { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
 		#generate { min-width: 148px; }
 		.output-section { margin-top: 32px; }
-		.output-shell { border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; }
-		.output-empty { min-height: 176px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); background: var(--subtle); }
-		.output-empty .icon { width: 26px; height: 26px; }
-		.output-empty strong { display: block; font-size: 14px; font-weight: 500; color: var(--body); }
-		.output-empty span { font: 11px/1.8 var(--mono); }
+		.output-shell { border-radius: 8px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
 		.resource { display: flex; align-items: center; gap: 12px; padding: 18px 20px; }
-		.resource > .icon { color: var(--body); width: 22px; height: 22px; }
+		.resource > span > .icon { color: var(--body); width: 22px; height: 22px; }
 		.resource-text { min-width: 0; flex: 1; }
 		.resource-name { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 		.resource-meta { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
@@ -368,44 +353,32 @@ async function githubInterface() {
 		.code-box { background: var(--code); color: var(--code-ink); }
 		.code-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px 0 20px; font: 11px/1.6 var(--mono); color: #adb4c0; }
 		.code-bar .icon-button { color: #ced4df; }
-		.code-bar .icon-button:hover { background: #2c3038; }
 		#output { display: block; font: 13px/1.85 var(--mono); margin: 0; padding: 7px 20px 22px; max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; scrollbar-color: #555b65 var(--code); }
 		.code-box ::selection { background: #8bb9ff; color: #101113; }
-		.output-actions { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+		.output-actions { padding: 14px 20px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 		.text-link { display: inline-flex; align-items: center; gap: 4px; color: var(--body); font-size: 12px; }
 		.text-link .icon { width: 15px; height: 15px; }
-		.examples { margin-top: 34px; }
-		.examples .section-head { margin-bottom: 8px; }
-		.example-list { border-top: 1px solid var(--line); }
-		.example-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 4px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; }
-		.example-row > .icon:first-child { color: var(--body); width: 18px; height: 18px; }
-		.example-row > .icon:last-child { color: var(--muted); width: 16px; height: 16px; margin-left: auto; }
-		.example-content { flex: 1; min-width: 0; }
-		.example-content strong { display: block; font-weight: 500; font-size: 13px; }
-		.example-content span { display: block; color: var(--muted); font: 11px/1.8 var(--mono); overflow-wrap: anywhere; }
-		.example-type { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-		.sidebar { padding: 30px 0 36px 28px; border-left: 1px solid var(--line); min-width: 0; }
-		.sidebar section + section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
-		.sidebar h2 { font-size: 13px; margin-bottom: 16px; }
-		.detail-list { margin: 0; display: grid; gap: 14px; }
+		.disclosure { border-top: 1px solid var(--line); }
+		.disclosure-summary { list-style: none; min-height: 56px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--body); font-size: 13px; }
+		.disclosure-summary::-webkit-details-marker { display: none; }
+		.disclosure-summary > .icon { width: 17px; height: 17px; color: var(--muted); }
+		.disclosure-summary > .icon:last-child { margin-left: auto; transition: transform 160ms ease-out; }
+		.disclosure[open] > .disclosure-summary > .icon:last-child { transform: rotate(90deg); }
+		.disclosure-body { padding: 0 0 24px; }
+		#resource-disclosure { margin-top: 20px; }
+		#history-disclosure { margin-top: 32px; border-bottom: 1px solid var(--line); }
+		.detail-list { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
+		.detail-wide { grid-column: 1 / -1; }
 		.detail-list dt { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
 		.detail-list dd { margin: 0; color: var(--body); font: 12px/1.75 var(--mono); overflow-wrap: anywhere; }
 		#detail-path { max-height: 105px; overflow: auto; scrollbar-color: var(--line-strong) var(--page); }
-		.route-detail { display: flex; gap: 10px; align-items: flex-start; }
+		.route-detail { display: flex; gap: 10px; align-items: flex-start; margin: 20px 0 16px; }
 		.route-detail .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--accent); }
 		.route-detail p { font-size: 12px; color: var(--body); }
 		.route-detail small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; }
-		.support-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 13px; }
-		.support-list li { display: flex; gap: 9px; align-items: center; color: var(--body); font-size: 12px; }
-		.support-list .icon { width: 14px; height: 14px; color: var(--muted); }
-		.support-list code { font: 11px/1.6 var(--mono); overflow-wrap: anywhere; }
-		.scope-note { margin-top: 18px; font-size: 11px; color: var(--muted); display: flex; gap: 7px; align-items: flex-start; }
-		.scope-note .icon { width: 14px; height: 14px; margin-top: 2px; }
-		.history-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
-		.history-header p { color: var(--muted); font-size: 12px; margin-top: 4px; }
-		.history-empty { min-height: 330px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; color: var(--muted); }
-		.history-empty > .icon { width: 32px; height: 32px; }
-		.history-empty h2 { color: var(--body); font-size: 15px; }
+		.history-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 8px; }
+		.history-header p, .history-empty { color: var(--muted); font-size: 12px; }
+		.history-empty { padding: 8px 0; }
 		.history-list { list-style: none; padding: 0; margin: 0; }
 		.history-row { display: flex; gap: 12px; align-items: center; padding: 18px 0; border-top: 1px solid var(--line); }
 		.history-row > .icon { width: 18px; height: 18px; color: var(--body); }
@@ -414,8 +387,8 @@ async function githubInterface() {
 		.history-source { display: block; font: 11px/1.8 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
 		.history-time { font-size: 11px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
 		.history-tools { display: flex; gap: 2px; flex-shrink: 0; }
-		footer { border-top: 1px solid var(--line); background: var(--surface); }
-		.footer-inner { min-height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 11px; }
+		footer { border-top: 1px solid var(--line); }
+		.footer-inner { max-width: 1200px; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 11px; }
 		.footer-inner strong { color: var(--body); font-weight: 500; margin-right: 10px; }
 		.footer-links { display: flex; gap: 18px; flex-shrink: 0; }
 		#notice { position: fixed; z-index: 10; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); box-shadow: 0 4px 8px -4px #00000020, 0 12px 24px -8px #00000024; padding: 12px 18px; color: var(--ink); font-size: 13px; overflow-wrap: anywhere; display: flex; align-items: center; gap: 16px; }
@@ -431,32 +404,22 @@ async function githubInterface() {
 		@keyframes vt-reveal { from { clip-path: circle(0 at var(--vt-x) var(--vt-y)); } to { clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y)); } }
 		@keyframes vt-shrink { from { clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y)); } to { clip-path: circle(0 at var(--vt-x) var(--vt-y)); } }
 		@media (hover: hover) and (pointer: fine) {
-			.icon-button:hover, .example-row:hover { background: var(--subtle); color: var(--ink); }
+			.icon-button:hover { background: var(--subtle); color: var(--ink); }
+			.code-bar .icon-button:hover { background: #2c3038; color: var(--code-ink); }
 			.button:hover { background: var(--subtle); }
 			.button.primary:hover { background: var(--press); border-color: var(--press); }
 			a:hover { color: var(--accent); text-decoration: underline; }
-			.tab:hover { color: var(--ink); }
-		}
-		@media (max-width: 960px) {
-			.workspace { grid-template-columns: minmax(0, 1fr) 230px; }
-			.workarea { padding-right: 28px; }
-			.sidebar { padding-left: 24px; }
-			.brand-context, .brand-divider { display: none; }
+			.tab:hover, .disclosure-summary:hover { color: var(--ink); }
 		}
 		@media (max-width: 760px) {
 			.wrap { padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left)); }
 			.topbar-inner { min-height: 66px; }
 			.brand { font-size: 18px; gap: 10px; }
-			.tabs { gap: 24px; }
-			.intro { padding: 28px 0 24px; }
-			.instance { display: none; }
-			.workspace { display: block; }
-			.workarea { padding: 24px 0 32px; }
-			.sidebar { padding: 24px 0 32px; border-left: 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-			.sidebar section + section { margin: 0; padding: 0; border: 0; }
-			.sidebar section:first-child { grid-column: 1 / -1; }
-			.detail-list { grid-template-columns: 1fr 1fr; }
-			.footer-inner { min-height: 88px; gap: 12px; flex-wrap: wrap; padding-top: 20px; padding-bottom: 20px; }
+			.intro { padding: 32px 0 24px; align-items: flex-start; flex-direction: column; gap: 24px; }
+			.intro nav, .tabs { width: 100%; }
+			.tab { flex: 1; min-height: 44px; }
+			.workarea { padding-bottom: 32px; }
+			.footer-inner { min-height: 80px; gap: 12px; flex-wrap: wrap; padding-top: 16px; padding-bottom: 16px; }
 			.input-tools .icon-button { width: 44px; height: 44px; }
 			.icon-button { width: 44px; height: 44px; }
 			.button { min-height: 44px; }
@@ -470,19 +433,13 @@ async function githubInterface() {
 			.top-actions { gap: 8px; }
 			.source-link span { display: none; }
 			.source-link { width: 36px; height: 44px; justify-content: center; }
-			.tabs { gap: 18px; }
-			.tab { font-size: 12px; gap: 6px; }
-			.tab .icon { width: 15px; height: 15px; }
+			.tab { padding: 0 10px; }
 			.form-bottom { align-items: stretch; flex-direction: column; gap: 12px; }
 			#generate { width: 100%; }
 			.input-shell { padding-left: 12px; gap: 10px; }
 			#source { font-size: 13px; }
-			.sidebar { grid-template-columns: 1fr; }
-			.sidebar section:first-child { grid-column: auto; }
-			.sidebar section + section { padding-top: 20px; border-top: 1px solid var(--line); }
-			.example-type { display: none; }
+			.detail-list { grid-template-columns: 1fr; }
 			.output-actions { align-items: stretch; flex-direction: column; }
-			.output-actions .text-link { min-height: 32px; }
 			.history-tools { flex-direction: column; }
 		}
 		@media (prefers-reduced-motion: reduce) {
@@ -496,74 +453,69 @@ async function githubInterface() {
 		<div class="wrap topbar-inner">
 			<a class="brand" href="${PREFIX}" aria-label="Z-GitHub 首页">
 				<img id="brand-image" width="32" height="32" alt="" src="${PREFIX}favicon.ico">
-				<span>Z-GitHub</span><span class="brand-divider" aria-hidden="true"></span><span class="brand-context">资源加速</span>
+				<span>Z-GitHub</span>
 			</a>
 			<div class="top-actions">
 				<a class="source-link" href="https://github.com/5121xiaoge/Z-GitHub" target="_blank" rel="noopener noreferrer" aria-label="项目仓库（新窗口）" title="项目仓库">${icon('external')}<span>项目仓库</span></a>
-				<button class="icon-button" id="theme" type="button" title="切换到深色" aria-label="切换到深色" aria-pressed="false">${icon('moon')}</button>
+				<button class="icon-button" id="theme" type="button" title="切换到浅色" aria-label="切换到浅色" aria-pressed="true">${icon('sun')}</button>
 			</div>
 		</div>
 	</header>
-	<nav class="tabs-band" aria-label="加速工具">
-		<div class="wrap tabs" role="tablist" aria-label="资源类型">
-			<button class="tab" id="tab-file" role="tab" aria-selected="true" aria-controls="panel-work" data-mode="file" type="button">${icon('link')}文件加速</button>
-			<button class="tab" id="tab-clone" role="tab" aria-selected="false" aria-controls="panel-work" tabindex="-1" data-mode="clone" type="button">${icon('terminal')}Git Clone</button>
-			<button class="tab" id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1" data-mode="history" type="button">${icon('clock')}最近记录<span class="count" id="history-count">0</span></button>
-		</div>
-	</nav>
 	<main class="wrap" id="main" tabindex="-1">
 		<div class="intro">
-			<div><h1>GitHub 资源加速</h1><p>Z-GitHub / Cloudflare Workers</p></div>
-			<div class="instance">当前实例<code id="instance-host"></code></div>
+			<h1>GitHub 资源加速</h1>
+			<nav aria-label="加速工具">
+				<div class="tabs" role="tablist" aria-label="资源类型">
+					<button class="tab" id="tab-file" role="tab" aria-selected="true" aria-controls="panel-work" data-mode="file" type="button">${icon('link')}文件加速</button>
+					<button class="tab" id="tab-clone" role="tab" aria-selected="false" aria-controls="panel-work" tabindex="-1" data-mode="clone" type="button">${icon('terminal')}Git Clone</button>
+				</div>
+			</nav>
 		</div>
-		<div class="workspace">
-			<div class="workarea">
-				<section id="panel-work" role="tabpanel" aria-labelledby="tab-file">
-					<form id="source-form" novalidate>
-						<div class="section-head"><label class="field-label" for="source" id="source-label">源文件链接</label><span class="metadata" id="input-kind">公开资源</span></div>
-						<div class="input-shell" id="input-shell">
-							${icon('link')}
-							<textarea id="source" name="q" inputmode="url" rows="3" maxlength="8192" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="validation" placeholder="https://github.com/owner/repo/releases/download/…"></textarea>
-							<div class="input-tools">
-								<button class="icon-button flat" id="paste" type="button" aria-label="粘贴链接" title="粘贴链接">${icon('paste')}</button>
-								<button class="icon-button flat" id="clear" type="button" aria-label="清空输入" title="清空输入" disabled>${icon('x')}</button>
-							</div>
+		<div class="workarea">
+			<section id="panel-work" role="tabpanel" aria-labelledby="tab-file">
+				<form id="source-form" novalidate>
+					<div class="section-head"><label class="field-label" for="source" id="source-label">源文件链接</label></div>
+					<div class="input-shell" id="input-shell">
+						${icon('link')}
+						<textarea id="source" name="q" inputmode="url" rows="3" maxlength="8192" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="validation" placeholder="https://github.com/owner/repo/releases/download/…"></textarea>
+						<div class="input-tools">
+							<button class="icon-button flat" id="paste" type="button" aria-label="粘贴链接" title="粘贴链接">${icon('paste')}</button>
+							<button class="icon-button flat" id="clear" type="button" aria-label="清空输入" title="清空输入" disabled>${icon('x')}</button>
 						</div>
-						<div class="form-bottom">
-							<p class="validation" id="validation" role="status" aria-live="polite">${icon('link')}<span>尚未输入链接</span></p>
-							<button class="button primary" id="generate" type="submit"><span id="generate-label">生成加速链接</span>${icon('arrow')}</button>
+					</div>
+					<div class="form-bottom">
+						<p class="validation" id="validation" role="status" aria-live="polite" data-state="empty"></p>
+						<button class="button primary" id="generate" type="submit"><span id="generate-label">生成加速链接</span>${icon('arrow')}</button>
+					</div>
+				</form>
+				<section class="output-section" id="output-section" aria-labelledby="output-heading" hidden>
+					<div class="section-head"><h2 id="output-heading">加速结果</h2></div>
+					<div class="output-shell" id="result">
+						<div class="resource"><span id="resource-icon">${icon('file')}</span><div class="resource-text"><p class="resource-name" id="resource-name"></p><p class="resource-meta" id="resource-meta"></p></div><span class="status-tag">${icon('check')}已生成</span></div>
+						<div class="code-box" translate="no"><div class="code-bar"><span id="code-label">PROXY URL</span><button class="icon-button flat" id="copy" type="button" title="复制加速链接" aria-label="复制加速链接">${icon('copy')}</button></div><code id="output" tabindex="0" aria-label="生成结果"></code></div>
+						<div class="output-actions" id="output-actions"><a id="download" class="button" target="_blank" rel="noopener noreferrer">${icon('download')}下载文件</a></div>
+					</div>
+					<details class="disclosure" id="resource-disclosure">
+						<summary class="disclosure-summary">${icon('shield')}资源详情${icon('chevron')}</summary>
+						<div class="disclosure-body">
+							<dl class="detail-list"><div><dt>来源</dt><dd id="detail-host"></dd></div><div><dt>仓库 / Gist</dt><dd id="detail-repo"></dd></div><div><dt>资源类型</dt><dd id="detail-type"></dd></div><div><dt>实例地址</dt><dd id="detail-instance"></dd></div><div class="detail-wide"><dt>资源路径</dt><dd id="detail-path"></dd></div></dl>
+							<div class="route-detail">${icon('shield')}<div><p id="route-policy"></p><small id="route-note"></small></div></div>
+							<a id="original" class="text-link" target="_blank" rel="noopener noreferrer">原始资源${icon('external')}</a>
 						</div>
-					</form>
-					<section class="output-section" aria-labelledby="output-heading">
-						<div class="section-head"><h2 id="output-heading">加速结果</h2><span class="metadata" id="output-kind">URL</span></div>
-						<div class="output-shell">
-							<div class="output-empty" id="output-empty">${icon('link')}<div><strong>等待生成</strong><span id="empty-kind">PROXY URL</span></div></div>
-							<div id="result" hidden>
-								<div class="resource"><span id="resource-icon">${icon('file')}</span><div class="resource-text"><p class="resource-name" id="resource-name"></p><p class="resource-meta" id="resource-meta"></p></div><span class="status-tag">${icon('check')}已生成</span></div>
-								<div class="code-box" translate="no"><div class="code-bar"><span id="code-label">PROXY URL</span><button class="icon-button flat" id="copy" type="button" title="复制结果" aria-label="复制结果">${icon('copy')}</button></div><code id="output" tabindex="0" aria-label="生成结果"></code></div>
-								<div class="output-actions"><a id="original" class="text-link" target="_blank" rel="noopener noreferrer">原始资源${icon('external')}</a><a id="download" class="button" target="_blank" rel="noopener noreferrer">${icon('download')}下载文件</a><button id="copy-command" class="button" type="button" hidden>${icon('copy')}复制命令</button></div>
-							</div>
-						</div>
-					</section>
-					<section class="examples" aria-labelledby="examples-heading">
-						<div class="section-head"><h2 id="examples-heading">示例资源</h2><span class="metadata">5121xiaoge / Z-GitHub</span></div>
-						<div class="example-list" id="examples"></div>
-					</section>
+					</details>
 				</section>
-				<section id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
-					<div class="history-header"><div><h2>最近记录</h2><p>当前页面会话</p></div><button class="icon-button flat" id="clear-history" type="button" title="清空记录" aria-label="清空记录" disabled>${icon('trash')}</button></div>
-					<div class="history-empty" id="history-empty">${icon('clock')}<h2>暂无生成记录</h2><button class="button" id="start-file" type="button">${icon('link')}文件加速</button></div>
+			</section>
+			<details class="disclosure" id="history-disclosure">
+				<summary class="disclosure-summary" id="history-heading">${icon('clock')}最近记录<span class="count" id="history-count" hidden>0</span>${icon('chevron')}</summary>
+				<section class="disclosure-body" id="panel-history" aria-labelledby="history-heading">
+					<div class="history-header"><p>当前页面会话</p><button class="icon-button flat" id="clear-history" type="button" title="清空记录" aria-label="清空记录" disabled>${icon('trash')}</button></div>
+					<p class="history-empty" id="history-empty">暂无生成记录</p>
 					<ul class="history-list" id="history-list" aria-label="已生成的资源"></ul>
 				</section>
-			</div>
-			<aside class="sidebar" aria-label="资源与实例信息">
-				<section><h2>资源详情</h2><dl class="detail-list"><div><dt>来源</dt><dd id="detail-host">未选择资源</dd></div><div><dt>仓库 / Gist</dt><dd id="detail-repo">—</dd></div><div><dt>资源类型</dt><dd id="detail-type">—</dd></div><div><dt>资源路径</dt><dd id="detail-path">—</dd></div></dl></section>
-				<section><h2>当前路由</h2><div class="route-detail">${icon('shield')}<div><p id="route-policy"></p><small id="route-note"></small></div></div><dl class="detail-list" style="margin-top:16px"><div><dt>实例地址</dt><dd id="detail-instance"></dd></div></dl></section>
-				<section><h2>资源范围</h2><ul class="support-list"><li>${icon('check')}<code>releases / archive</code></li><li>${icon('check')}<code>blob / raw</code></li><li>${icon('check')}<code>raw.githubusercontent.com</code></li><li>${icon('check')}<code>gist / tags</code></li><li>${icon('check')}<span>Git HTTPS</span></li></ul><p class="scope-note">${icon('alert')}<span>不支持文件夹下载与含凭据的链接</span></p></section>
-			</aside>
+			</details>
 		</div>
 	</main>
-	<footer><div class="wrap footer-inner"><div><strong>Z-GitHub</strong>Cloudflare Workers &amp; Pages</div><div class="footer-links"><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/README.md" target="_blank" rel="noopener noreferrer">文档</a><a href="https://github.com/cmliu/CF-Workers-GitHub" target="_blank" rel="noopener noreferrer">上游项目</a><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></div></div></footer>
+	<footer><div class="wrap footer-inner"><div><strong>Z-GitHub</strong>Cloudflare Workers &amp; Pages</div><div class="footer-links"><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/README.md" target="_blank" rel="noopener noreferrer">文档</a><a href="https://github.com/5121xiaoge/Z-GitHub/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></div></div></footer>
 	<div id="notice" role="status" aria-live="polite" hidden></div>
 	<noscript><p style="padding:24px;text-align:center">链接生成需要 JavaScript。现有代理路由仍可直接访问。</p></noscript>
 	<!-- Lucide icons 0.468.0, ISC License.
@@ -595,11 +547,6 @@ async function githubInterface() {
 		let revision = 0;
 		let result = null;
 		let noticeTimer;
-		const EXAMPLES = [
-			{ name: 'main.zip', path: 'archive/refs/heads/main.zip', type: '分支源码', icon: 'package', url: 'https://github.com/5121xiaoge/Z-GitHub/archive/refs/heads/main.zip' },
-			{ name: '_worker.js', path: 'blob/main/_worker.js', type: '项目文件', icon: 'file', url: 'https://github.com/5121xiaoge/Z-GitHub/blob/main/_worker.js' },
-			{ name: 'README.md', path: 'raw.githubusercontent.com', type: 'Raw 文件', icon: 'file', url: 'https://raw.githubusercontent.com/5121xiaoge/Z-GitHub/main/README.md' },
-		];
 
 		function notify(message, restore) {
 			$('notice').replaceChildren();
@@ -684,8 +631,8 @@ async function githubInterface() {
 
 		function resetResult() {
 			result = null;
-			$('result').hidden = true;
-			$('output-empty').hidden = false;
+			$('output-section').hidden = true;
+			$('resource-disclosure').open = false;
 			$('output').textContent = '';
 			$('download').removeAttribute('href');
 			$('original').removeAttribute('href');
@@ -700,48 +647,31 @@ async function githubInterface() {
 			setDetails(info);
 		}
 
-		function renderExamples() {
-			$('examples').replaceChildren();
-			const examples = mode === 'clone' ? [
-				{ name: 'Z-GitHub', path: 'github.com/5121xiaoge/Z-GitHub', type: 'Git HTTPS', icon: 'terminal', url: 'https://github.com/5121xiaoge/Z-GitHub' }
-			] : EXAMPLES;
-			for (const example of examples) {
-				const button = document.createElement('button');
-				button.type = 'button';
-				button.className = 'example-row';
-				button.innerHTML = icon(example.icon) + '<span class="example-content"><strong></strong><span></span></span><span class="example-type"></span>' + icon('arrow');
-				button.querySelector('strong').textContent = example.name;
-				button.querySelector('.example-content span').textContent = example.path;
-				button.querySelector('.example-type').textContent = example.type;
-				button.setAttribute('aria-label', '选择示例：' + example.name);
-				button.addEventListener('click', () => { source.value = example.url; changed(); source.focus(); });
-				$('examples').append(button);
-			}
-		}
-
 		function selectMode(next, updateRoute = true) {
-			if (mode !== 'history') drafts[mode] = validate(source.value).error ? '' : source.value;
+			if (next === 'history') {
+				$('history-disclosure').open = true;
+				renderHistory();
+				if (updateRoute) { try { history.replaceState(null, '', '#history'); } catch {} }
+				return;
+			}
+			drafts[mode] = validate(source.value).error ? '' : source.value;
 			mode = next;
 			revision++;
+			$('history-disclosure').open = false;
 			if (updateRoute) { try { history.replaceState(null, '', '#' + mode); } catch {} }
 			for (const tab of document.querySelectorAll('[role="tab"]')) {
 				const selected = tab.dataset.mode === mode;
 				tab.setAttribute('aria-selected', String(selected));
 				tab.tabIndex = selected ? 0 : -1;
 			}
-			$('panel-work').hidden = mode === 'history';
-			$('panel-history').hidden = mode !== 'history';
-			if (mode === 'history') { setDetails({}); renderHistory(); return; }
 			$('panel-work').setAttribute('aria-labelledby', 'tab-' + mode);
 			source.value = drafts[mode];
 			$('source-label').textContent = mode === 'clone' ? '仓库链接' : '源文件链接';
 			source.placeholder = mode === 'clone' ? 'https://github.com/owner/repo' : 'https://github.com/owner/repo/releases/download/…';
-			$('input-kind').textContent = mode === 'clone' ? 'Git HTTPS' : '公开资源';
 			$('generate-label').textContent = mode === 'clone' ? '生成克隆命令' : '生成加速链接';
 			$('output-heading').textContent = mode === 'clone' ? '克隆命令' : '加速结果';
-			$('output-kind').textContent = mode === 'clone' ? 'Shell' : 'URL';
-			$('empty-kind').textContent = mode === 'clone' ? 'GIT CLONE' : 'PROXY URL';
-			renderExamples();
+			$('copy').setAttribute('aria-label', mode === 'clone' ? '复制克隆命令' : '复制加速链接');
+			$('copy').title = mode === 'clone' ? '复制克隆命令' : '复制加速链接';
 			changed();
 		}
 
@@ -749,6 +679,7 @@ async function githubInterface() {
 			$('history-list').replaceChildren();
 			$('history-empty').hidden = records.length > 0;
 			$('history-count').textContent = records.length;
+			$('history-count').hidden = records.length === 0;
 			$('clear-history').disabled = records.length === 0;
 			for (const record of records) {
 				const row = document.createElement('li');
@@ -786,10 +717,8 @@ async function githubInterface() {
 			$('code-label').textContent = mode === 'clone' ? 'GIT CLONE' : 'PROXY URL';
 			$('original').href = mode === 'clone' ? 'https://github.com/' + info.repo : info.url.href;
 			$('download').href = proxyUrl;
-			$('download').hidden = mode === 'clone';
-			$('copy-command').hidden = mode !== 'clone';
-			$('result').hidden = false;
-			$('output-empty').hidden = true;
+			$('output-actions').hidden = mode === 'clone';
+			$('output-section').hidden = false;
 			// Query-bearing resources may be ephemeral; never retain them in history.
 			if (!info.url.search) {
 				const existing = records.findIndex(record => record.source === result.source && record.mode === mode);
@@ -823,13 +752,12 @@ async function githubInterface() {
 			try {
 				if (!navigator.clipboard?.readText) throw new Error();
 				const text = await navigator.clipboard.readText();
-				if (pendingRevision !== revision || mode === 'history') return;
+				if (pendingRevision !== revision) return;
 				source.value = text; changed(); source.focus();
 			} catch { if (pendingRevision === revision) { notify('无法读取剪贴板，请直接粘贴到输入框'); source.focus(); } }
 			finally { button.disabled = false; }
 		});
 		$('copy').addEventListener('click', () => copyText(result?.output));
-		$('copy-command').addEventListener('click', () => copyText(result?.output));
 		$('clear-history').addEventListener('click', () => {
 			const previous = records.slice();
 			records.length = 0; renderHistory();
@@ -838,10 +766,14 @@ async function githubInterface() {
 					if (!records.some(current => current.source === record.source && current.mode === record.mode)) records.push(record);
 				}
 				records.length = Math.min(records.length, 12);
-				renderHistory(); notify('记录已恢复'); $('clear-history').focus();
+				renderHistory(); notify('记录已恢复'); $('history-disclosure').open = true; $('clear-history').focus();
 			});
 		});
-		$('start-file').addEventListener('click', () => { selectMode('file'); $('tab-file').focus(); });
+		$('history-disclosure').addEventListener('toggle', () => {
+			const open = $('history-disclosure').open;
+			if (open) renderHistory();
+			try { history.replaceState(null, '', '#' + (open ? 'history' : mode)); } catch {}
+		});
 		const tabs = [...document.querySelectorAll('[role="tab"]')];
 		for (const tab of tabs) {
 			tab.addEventListener('click', () => selectMode(tab.dataset.mode));
@@ -854,7 +786,7 @@ async function githubInterface() {
 		}
 		window.addEventListener('hashchange', () => {
 			const next = location.hash.slice(1);
-			if (['file', 'clone', 'history'].includes(next) && next !== mode) selectMode(next, false);
+			if (['file', 'clone', 'history'].includes(next)) selectMode(next, false);
 		});
 
 		const html = document.documentElement;
@@ -872,7 +804,7 @@ async function githubInterface() {
 			$('theme').setAttribute('aria-pressed', String(dark));
 			const label = dark ? '切换到浅色' : '切换到深色';
 			$('theme').setAttribute('aria-label', label); $('theme').title = label;
-			document.querySelector('meta[name="theme-color"]').content = dark ? '#101113' : '#fafafa';
+			document.querySelector('meta[name="theme-color"]').content = dark ? '#0b0c0f' : '#f5f6f8';
 			if (persist) { try { localStorage.setItem('zgithub.theme', theme); } catch {} }
 		}
 
@@ -892,7 +824,7 @@ async function githubInterface() {
 					await activeTransition.finished;
 				} else if (typeof Element.prototype.animate === 'function') {
 					wipe = document.createElement('div'); wipe.className = 'theme-wipe';
-					Object.assign(wipe.style, { width: radius * 2 + 'px', height: radius * 2 + 'px', left: point.x - radius + 'px', top: point.y - radius + 'px', background: '#101113' });
+					Object.assign(wipe.style, { width: radius * 2 + 'px', height: radius * 2 + 'px', left: point.x - radius + 'px', top: point.y - radius + 'px', background: '#0b0c0f' });
 					document.body.append(wipe);
 					if (theme === 'light') setTheme(theme);
 					activeWipe = wipe.animate([{ transform: theme === 'dark' ? 'scale(0)' : 'scale(1)' }, { transform: theme === 'dark' ? 'scale(1)' : 'scale(0)' }], { duration: 520, easing: 'ease-out', fill: 'both' });
@@ -923,9 +855,10 @@ async function githubInterface() {
 		reducedMotion.addEventListener('change', interruptMotion);
 		document.addEventListener('visibilitychange', interruptMotion);
 		setTheme(html.dataset.theme, false);
-		$('instance-host').textContent = location.host;
 		$('detail-instance').textContent = base;
-		selectMode(['file', 'clone', 'history'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'file');
+		const initialView = location.hash.slice(1);
+		selectMode(initialView === 'clone' ? 'clone' : 'file', initialView !== 'history');
+		if (initialView === 'history') selectMode('history', false);
 	</script>
 </body>
 </html>`;

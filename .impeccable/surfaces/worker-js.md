@@ -46,21 +46,37 @@ related_targets: []
 THESIS: A premium working console for generating GitHub proxy links, not a
 marketing landing page. The first screen opens directly into the task.
 
-OWN-WORLD: White and soft neutral surfaces, graphite dark mode, fine borders,
-subtle stacked elevation, 6-8px corners, system Chinese sans and technical mono.
-Blue marks actions and selection; green marks validated links only.
+OWN-WORLD: Near-black graphite canvas, stepped dark tool surfaces and hairline
+boundaries without tool shadows; 6-8px corners, Chinese system sans and technical
+mono. Coral marks the primary command and focus; mint marks validated links.
+A light counterpart keeps the same hierarchy and preserves theme choice.
 
-STORY: Choose file or clone, enter a supported source, inspect the derived
-resource, generate a real URL or command, copy or open it, reuse session records.
+STORY: Choose file or clone, enter a supported source, generate a real URL or
+command, then copy or download it. Inspect details and reuse session records
+only when needed.
 
-FIRST VIEWPORT: Compact branded header and navigation, a 28px task title,
-a wide input/result work area, and a narrower unframed request-detail column.
-The primary generation command stays visible on mobile without a hero.
+FIRST VIEWPORT: A compact branded header on continuous graphite canvas, a 26px
+task title alongside two mode tabs, and a centered 832px input work area.
+The coral generation command sits directly below the input. There is no empty
+result panel or sidebar; generated results appear inline. Resource details
+and recent records are native disclosures, closed by default.
 
-FORM: User-pinned Vercel-inspired Operate surface, code-led. No concept roll:
-the confirmed reference and premium-finish constraint determine the world.
-The signature move is a click-centered 520ms circular light/dark reveal.
+FORM: User-pinned Raycast-inspired Operate surface, code-led, superseding the
+previous Vercel reference on 2026-11-24. The user approved graphite depth,
+coral accents and reduced content. Per mode-operate, this reference lends
+palette, type and density, not marketing structure or copied branding.
+The signature move remains the click-centered 520ms theme reveal.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the
 finish review, the verdict, DESIGN.md, and every shipping raster carrying its
 provenance.
+
+## 2026-11-24 / 新风格与内容收敛
+
+- 用户反馈：内容太多、操作太复杂；随后明确要求换风格并确认 Raycast 参考。
+- 移除重复实例文案、示例列表、大块等待结果、资源范围侧栏和重复复制命令。
+- 详情、原始资源入口和历史仍保留，通过原生折叠区渐进展示。
+- 保留 file / clone / history 深链、输入校验、主题、复制、下载和历史恢复。
+- 默认深色；保留用户已有主题选择及浅色模式。主操作珊瑚红是用户确认的
+  本项目改写，不是 Raycast 官方规范；不复制条纹、品牌或营销界面。
+- 不改代理核心、环境变量、内嵌 favicon 或许可证；本轮不推送、不部署。
