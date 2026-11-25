@@ -127,6 +127,7 @@ test('compact examples use public links supported by their active mode', async t
       await t.test(kind + ': ' + example.label, () => {
         assert.equal(client.validateInput(example.url, kind).error, undefined);
         assert.match(example.url, /^(?:https:\/\/|git@github\.com:)/);
+        assert.doesNotMatch(example.url, /5121xiaoge|Z-GitHub/i);
       });
     }
   }
@@ -152,12 +153,12 @@ test('example buttons fill editable input without generating or retaining old re
   assert.equal(fileExample.type, 'button');
   assert.equal(fileExample.attributes['aria-label'], '填入项目文件示例');
   fileExample.listeners.click();
-  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub/blob/main/_worker.js');
+  assert.equal(source.value, 'https://github.com/microsoft/vscode/blob/main/README.md');
   assert.equal(elements.get('output-section').hidden, true);
   actions.generate();
   elements.get('resource-disclosure').open = true;
   examples.children[1].listeners.click();
-  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub');
+  assert.equal(source.value, 'https://github.com/microsoft/vscode');
   assert.equal(elements.get('output-section').hidden, true);
   assert.equal(elements.get('output').textContent, '');
   assert.equal(elements.get('resource-disclosure').open, false);
@@ -166,13 +167,13 @@ test('example buttons fill editable input without generating or retaining old re
   assert.equal(examples.children.length, 2);
   assert.equal(examples.children[1].attributes['aria-label'], '填入SSH示例');
   examples.children[1].listeners.click();
-  assert.equal(source.value, 'git@github.com:5121xiaoge/Z-GitHub.git');
+  assert.equal(source.value, 'git@github.com:microsoft/vscode.git');
   assert.equal(elements.get('output-section').hidden, true);
   actions.generate();
-  assert.equal(elements.get('output').textContent, 'git clone https://proxy.example/https://github.com/5121xiaoge/Z-GitHub.git');
+  assert.equal(elements.get('output').textContent, 'git clone https://proxy.example/https://github.com/microsoft/vscode.git');
   actions.selectMode('file');
   assert.equal(examples.children.length, 3);
-  assert.equal(source.value, 'https://github.com/5121xiaoge/Z-GitHub');
+  assert.equal(source.value, 'https://github.com/microsoft/vscode');
 });
 
 test('removed history deep link falls back to the usable file form', async () => {

@@ -520,13 +520,13 @@ async function githubInterface() {
 		const ICONS = ${json(icons)};
 		const EXAMPLES = {
 			file: [
-				{ label: '项目文件', url: 'https://github.com/5121xiaoge/Z-GitHub/blob/main/_worker.js', icon: 'file' },
-				{ label: '源码 ZIP', url: 'https://github.com/5121xiaoge/Z-GitHub', icon: 'package' },
-				{ label: 'Raw 文件', url: 'https://raw.githubusercontent.com/5121xiaoge/Z-GitHub/main/_worker.js', icon: 'link' },
+				{ label: '项目文件', url: 'https://github.com/microsoft/vscode/blob/main/README.md', icon: 'file' },
+				{ label: '源码 ZIP', url: 'https://github.com/microsoft/vscode', icon: 'package' },
+				{ label: 'Raw 文件', url: 'https://raw.githubusercontent.com/microsoft/vscode/main/README.md', icon: 'link' },
 			],
 			clone: [
-				{ label: 'HTTPS', url: 'https://github.com/5121xiaoge/Z-GitHub.git', icon: 'link' },
-				{ label: 'SSH', url: 'git@github.com:5121xiaoge/Z-GitHub.git', icon: 'terminal' },
+				{ label: 'HTTPS', url: 'https://github.com/microsoft/vscode.git', icon: 'link' },
+				{ label: 'SSH', url: 'git@github.com:microsoft/vscode.git', icon: 'terminal' },
 			],
 		};
 		const $ = id => document.getElementById(id);

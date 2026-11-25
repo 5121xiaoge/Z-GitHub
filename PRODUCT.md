@@ -20,6 +20,7 @@ Cloudflare Workers / Pages proxy.
 - No recent-record list, link history storage, or static footer information.
 - Header contains only the brand and theme control; no project-repository link.
 - Mode-specific public examples fill the input without generating or downloading.
+  Use neutral public repositories, not the owner's username or project repository.
 - File mode accepts a repository root URL to generate its default-branch ZIP.
 - Clone mode normalizes public GitHub HTTPS and git-user SSH repository URLs.
 - Never retain credentials or accept signed or credential-bearing source URLs.
